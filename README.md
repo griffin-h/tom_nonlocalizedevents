@@ -7,7 +7,7 @@ superevent electromagnetic (EM) follow up observations.
 
 1. Install the module into your TOM environment:
     ```bash
-    pip install tom-superevent
+    pip install tom_superevent
    ```
 
 2. In your project `settings.py`, add `tom_superevent` to your `INSTALLED_APPS` setting:
