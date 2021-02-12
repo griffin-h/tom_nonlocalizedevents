@@ -4,11 +4,26 @@
 <!-- block content -->
 <h1>Superevent Index</h1>
 {% if object_list %}
-    <ul>
-    {% for superevent in object_list %}
-        <li><a href="/tom_superevent/{{ superevent.id }}/">{{ superevent.superevent_id }}</a></li>
-    {% endfor %}
-    </ul>
+  <table class="table">
+      <thead>
+      <tr>
+          <th scope="col">#</th>
+          <th scope="col">Superevent ID</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for superevent in object_list %}
+      <tr>
+          <th scope="row">
+              <a href="/tom_superevent/{{ superevent.id }}/">{{ superevent.id }}</a>
+          </th>
+          <td>
+              <a href="{{ superevent.superevent_url }}/">{{ superevent.superevent_id }}</a>
+          </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+  </table>
 {% else %}
     <p>No Superevents have been created. Create Superevents via the admin interface or REST API.</p>
 {% endif %}
