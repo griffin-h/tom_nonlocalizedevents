@@ -15,7 +15,7 @@ superevent electromagnetic (EM) follow up observations.
     ```python
     INSTALLED_APPS = [
         ...
-        'tom_superevent',
+        'tom_superevent.apps.TomSupereventConfig',
     ]
     ```
 
