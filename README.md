@@ -7,15 +7,15 @@ superevent electromagnetic (EM) follow up observations.
 
 1. Install the module into your TOM environment:
     ```bash
-    pip install tom_superevent
+    pip install tom_superevents
    ```
 
-2. In your project `settings.py`, add `tom_superevent` to your `INSTALLED_APPS` setting:
+2. In your project `settings.py`, add `tom_superevents` to your `INSTALLED_APPS` setting:
 
     ```python
     INSTALLED_APPS = [
         ...
-        'tom_superevent.apps.TomSupereventConfig',
+        'tom_superevents.apps.TomSupereventsConfig',
     ]
     ```
 
@@ -23,7 +23,7 @@ superevent electromagnetic (EM) follow up observations.
    ```python
    urlpatterns = [
         ...
-        path('tom_superevent/', include('tom_superevent.urls')),
+        path('superevents/', include('tom_superevents.urls')),
    ]
    ```
 
