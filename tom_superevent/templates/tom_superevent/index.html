@@ -15,10 +15,10 @@
       {% for superevent in object_list %}
       <tr>
           <th scope="row">
-              <a href="/tom_superevent/{{ superevent.id }}/">{{ superevent.id }}</a>
+              <a href="{% url 'superevents:detail'  superevent.id %}">{{ superevent.id }}</a>
           </th>
           <td>
-              <a href="{{ superevent.superevent_url }}/">{{ superevent.superevent_id }}</a>
+              <a href="{{ superevent.superevent_url }}">{{ superevent.superevent_id }}</a>
           </td>
       </tr>
       {% endfor %}
