@@ -23,14 +23,13 @@ class TestSupereventViewSet(SupereventAPITestCase):
 
     def test_superevent_list(self):
         """Test Superevent API list endpoint."""
-        response = self.client.get(reverse('superevents:superevent-list'))
-        #response = self.client.get('api/superevents/', json=True)  # TODO: sort out reverse argument
+        response = self.client.get(reverse('api:superevent-list'))
 
         self.assertEqual(response.json()['count'], 2)
-        self.assertContains(response, f'"superevent_id":{self.superevent1.superevent_id}')
-        self.assertContains(response, f'"superevent_url":{self.superevent1.superevent_url}')
-        self.assertContains(response, f'"superevent_id":{self.superevent2.superevent_id}')
-        self.assertContains(response, f'"superevent_url":{self.superevent2.superevent_url}')
+        self.assertContains(response, f'"superevent_id":"{self.superevent1.superevent_id}"')
+        self.assertContains(response, f'"superevent_url":"{self.superevent1.superevent_url}"')
+        self.assertContains(response, f'"superevent_id":"{self.superevent2.superevent_id}"')
+        self.assertContains(response, f'"superevent_url":"{self.superevent2.superevent_url}"')
 
 
 class TestEventLocalizationViewSet(SupereventAPITestCase):
