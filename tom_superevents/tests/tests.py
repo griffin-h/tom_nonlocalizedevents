@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-
+from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from tom_superevents.tests.factories import SupereventFactory, EventLocalizationFactory
@@ -20,8 +20,17 @@ class SupereventAPITestCase(APITestCase):
 
 
 class TestSupereventViewSet(SupereventAPITestCase):
-    def test_01(self):
-        pass
+
+    def test_superevent_list(self):
+        """Test Superevent API list endpoint."""
+        response = self.client.get(reverse('superevents:superevent-list'))
+        #response = self.client.get('api/superevents/', json=True)  # TODO: sort out reverse argument
+
+        self.assertEqual(response.json()['count'], 2)
+        self.assertContains(response, f'"superevent_id":{self.superevent1.superevent_id}')
+        self.assertContains(response, f'"superevent_url":{self.superevent1.superevent_url}')
+        self.assertContains(response, f'"superevent_id":{self.superevent2.superevent_id}')
+        self.assertContains(response, f'"superevent_url":{self.superevent2.superevent_url}')
 
 
 class TestEventLocalizationViewSet(SupereventAPITestCase):
