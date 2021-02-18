@@ -14,7 +14,8 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), APP_NAME))
 
 def boot_django():
     settings.configure(
-        BASE_DIR=BASE_DIR,
+    ROOT_URLCONF='tom_superevents.urls',
+    BASE_DIR=BASE_DIR,
         DEBUG=True,
         DATABASES={
             'default': {
