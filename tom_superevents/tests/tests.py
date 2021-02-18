@@ -33,4 +33,11 @@ class TestSupereventViewSet(SupereventAPITestCase):
 
 
 class TestEventLocalizationViewSet(SupereventAPITestCase):
-    pass
+    def test_eventlocalization_list(self):
+        """Test EventLocalization API list endpoint."""
+        response = self.client.get(reverse('api:eventlocalization-list'))
+
+        self.assertEqual(response.json()['count'], 2)
+        self.assertContains(response, '{}')
+
+
