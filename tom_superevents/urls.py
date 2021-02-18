@@ -1,9 +1,10 @@
 from django.urls import path, include
-from rest_framework import routers
+
+from tom_common.api_router import SharedAPIRootRouter
 
 from . import views
 
-router = routers.DefaultRouter()
+router = SharedAPIRootRouter()
 router.register(r'superevents', views.SupereventViewSet)
 router.register(r'eventlocalizations', views.EventLocalizationViewSet)
 
@@ -14,7 +15,4 @@ app_name = 'superevents'
 urlpatterns = [
     path('', views.SupereventListView.as_view(), name='index'),
     path('<int:pk>/', views.SupereventDetailView.as_view(), name='detail'),
-    # django restframework URLConf
-    path('api/', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
