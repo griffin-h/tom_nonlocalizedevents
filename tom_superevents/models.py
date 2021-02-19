@@ -1,9 +1,5 @@
 from django.db import models
 
-import tom_targets.models
-
-# Create your models here.
-
 
 class Superevent(models.Model):
     """Represents a Superevent being followed-up upon by this TOM.
