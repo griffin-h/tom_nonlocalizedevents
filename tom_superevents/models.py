@@ -10,6 +10,10 @@ class Superevent(models.Model):
     superevent_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
     superevent_url = models.URLField()
 
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+
     def __str__(self):
         return self.superevent_id
 
@@ -17,4 +21,6 @@ class Superevent(models.Model):
 class EventLocalization(models.Model):
     """Represents a region of the sky in which a superevent may have taken place.
     """
-    pass
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
