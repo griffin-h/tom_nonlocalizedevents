@@ -1,14 +1,15 @@
-# GW Superevent EM follow-up
+# GW Superevent (or GRB, Neutrino) EM follow-up
 
 This reusable TOM Toolkit app provides support for gravitational wave (GW)
 superevent electromagnetic (EM) follow up observations.  
 
 ## Installation
 
-1. Install the module into your TOM environment:
+1. Install the package into your TOM environment:
     ```bash
-    pip install tom_superevents
+    pip install tom_superevents  # TBD: tom_superevents is not on PyPI yet
    ```
+  NOTE: Until `tom_superevents` is ready for PyPI, installation in to your environment is best achieved by downloading the source and running `pip install -e /path/to/tom_superevents`
 
 2. In your project `settings.py`, add `tom_superevents` to your `INSTALLED_APPS` setting:
 
