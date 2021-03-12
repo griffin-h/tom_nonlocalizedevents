@@ -1,0 +1,66 @@
+{% extends 'tom_common/base.html' %}
+{% load bootstrap4 static tom_common_extras superevent_extras %}
+{% block content %}
+<script>
+object_id = {{ object.id }};
+object_api_url = "{{ object.api_url }}";
+$(document).ready(function(){
+    $.noConflict();
+    console.log(object_api_url);
+    jQuery.ajax({url: object_api_url, success: function(result){
+        console.log(result);
+    }});
+});
+</script>
+<div class="jumbotron jumbotron-fluid" style="position: absolute; left: 0; width: 100%; top: 56px;">
+    <div>
+        <div class="row mr-auto">
+            <div class="col-md-2">
+                <span id="superevent_name">{{ object.superevent_id }}</span>
+            </div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col">
+                        Update {{ superevent_data.update_version }}
+                    </div>
+                    <div class="col">
+                        MassGap {{ superevent_data.MassGap|percentage_filter }}
+                    </div>
+                    <div class="col">
+                        NSBH {{ superevent_data.NSBH|percentage_filter }}
+                    </div>
+                    <div class="col">
+                        90%: {{ superevent_data.90_percent }}
+                    </div>
+                    <div class="col">
+                        {{ superevent_data.instruments }}
+                    </div>
+                    <div class="col">
+                        FAR {{ superevent_data.far|percentage_filter }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        BNS {{ superevent_data.BNS|percentage_filter }}
+                    </div>
+                    <div class="col">
+                        Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}
+                    </div>
+                    <div class="col">
+                        BBH {{ superevent_data.BBH|percentage_filter }}
+                    </div>
+                    <div class="col">
+                        50%: {{ superevent_data.50_percent }}
+                    </div>
+                    <div class="col">
+                        {{ superevent_data.unknown_field }}
+                    </div>
+                    <div class="col">
+                        Has NS / Rem: {{ superevent_data.HasNS }} / {{ superevent_data.HasRemnant }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
