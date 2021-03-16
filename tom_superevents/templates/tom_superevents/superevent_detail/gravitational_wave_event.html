@@ -1,5 +1,8 @@
 {% extends 'tom_common/base.html' %}
-{% load bootstrap4 static tom_common_extras superevent_extras %}
+{% load bootstrap4 static superevent_extras %}
+{% block additional_css %}
+<link rel="stylesheet" href="{% static 'tom_superevents/css/main.css' %}">
+{% endblock %}
 {% block content %}
 <script>
 object_id = {{ object.id }};
@@ -12,7 +15,7 @@ $(document).ready(function(){
     }});
 });
 </script>
-<div class="jumbotron jumbotron-fluid" style="position: absolute; left: 0; width: 100%; top: 56px;">
+<div id="superevent-banner" class="jumbotron jumbotron-fluid" style="width: 100%; top: 56px;">
     <div>
         <div class="row mr-auto">
             <div class="col-md-2">
@@ -21,42 +24,42 @@ $(document).ready(function(){
             <div class="col-md-10">
                 <div class="row">
                     <div class="col">
-                        Update {{ superevent_data.update_version }}
+                        <span id="">Update {{ superevent_data.update_version }}</span>
                     </div>
                     <div class="col">
-                        MassGap {{ superevent_data.MassGap|percentage_filter }}
+                        <span id="">MassGap {{ superevent_data.MassGap|percentage_filter }}</span>
                     </div>
                     <div class="col">
-                        NSBH {{ superevent_data.NSBH|percentage_filter }}
+                        <span id="">NSBH {{ superevent_data.NSBH|percentage_filter }}</span>
                     </div>
                     <div class="col">
-                        90%: {{ superevent_data.90_percent }}
+                        <span id="">90%: {{ superevent_data.90_percent }}</span>
                     </div>
                     <div class="col">
-                        {{ superevent_data.instruments }}
+                        <span id="">{{ superevent_data.instruments }}</span>
                     </div>
                     <div class="col">
-                        FAR {{ superevent_data.far|percentage_filter }}
+                        <span id="">FAR {{ superevent_data.far|percentage_filter }}</span>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col">
-                        BNS {{ superevent_data.BNS|percentage_filter }}
+                        <span id="">BNS {{ superevent_data.BNS|percentage_filter }}</span>
                     </div>
                     <div class="col">
-                        Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}
+                        <span id="">Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}</span>
                     </div>
                     <div class="col">
-                        BBH {{ superevent_data.BBH|percentage_filter }}
+                        <span id="">BBH {{ superevent_data.BBH|percentage_filter }}</span>
                     </div>
                     <div class="col">
-                        50%: {{ superevent_data.50_percent }}
+                        <span id="">50%: {{ superevent_data.50_percent }}</span>
                     </div>
                     <div class="col">
-                        {{ superevent_data.unknown_field }}
+                        <span id="">{{ superevent_data.unknown_field }}</span>
                     </div>
                     <div class="col">
-                        Has NS / Rem: {{ superevent_data.HasNS }} / {{ superevent_data.HasRemnant }}
+                        <span id="">Has NS / Rem: {{ superevent_data.HasNS }} / {{ superevent_data.HasRemnant }}</span>
                     </div>
                 </div>
             </div>
