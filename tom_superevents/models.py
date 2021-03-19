@@ -12,10 +12,24 @@ class Superevent(models.Model):
     For the moment, this is rather GraceDB (GW) specific, but sh/could be generalized to work
     with gamma-ray burst and neutrino events.
     """
+
+    class SupereventType(models.TextChoices):
+        GRAVITATIONAL_WAVE = 'GW', 'Gravitational Wave'
+        GAMMA_RAY_BURST = 'GRB', 'Gamma-ray Burst'
+        NEUTRINO = 'NU', 'Neutrino'
+        UNKNOWN = 'UNK', 'Unknown'
+
+    superevent_type = models.CharField(
+        max_length=3,
+        choices=SupereventType.choices,
+        default=SupereventType.GRAVITATIONAL_WAVE,
+    )
+
+
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
     superevent_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
     superevent_url = models.URLField()  # TODO: this should instead be constructed via superevent_id
-    superevent_type = models.CharField(max_length=50)  # Should eventually be ChoiceField
+    #superevent_type = models.CharField(max_length=50)  # Should eventually be ChoiceField
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

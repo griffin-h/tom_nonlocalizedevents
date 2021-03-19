@@ -308,13 +308,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100
 }
 
-SUPEREVENT_CLASSES = {
-    'gravitational_wave_event': 'tom_superevents.superevent_clients.gracedb.GraceDBClient',
-    'gamma_ray_burst': None,
-    'neutrino': None,
-    'unknown': None
-}
-
 try:
     from local_settings import * # noqa
 except ImportError:
