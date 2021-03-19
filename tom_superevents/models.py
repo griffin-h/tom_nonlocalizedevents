@@ -4,8 +4,13 @@ from django.db import models
 
 class Superevent(models.Model):
     """Represents a Superevent being followed-up upon by this TOM.
-    For the moment, this is rather GraceDB specific, but sh/could be generalized to work
-    with gamma-ray bursts et al
+
+    A Superevent is distinguished from a Target in that it is localized to a region of the sky
+    (vs. a specific RA,DEC). The potential Targets in the localization region must be identified,
+    prioritized, and categorized (retired, of-interest, etc) for follow-up EM observations
+
+    For the moment, this is rather GraceDB (GW) specific, but sh/could be generalized to work
+    with gamma-ray burst and neutrino events.
     """
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
     superevent_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
