@@ -310,7 +310,9 @@ REST_FRAMEWORK = {
 
 SUPEREVENT_CLASSES = {
     'gravitational_wave_event': 'tom_superevents.superevent_clients.gracedb.GraceDBClient',
-    'gamma_ray_burst': None
+    'gamma_ray_burst': None,
+    'neutrino': None,
+    'unknown': None
 }
 
 try:
