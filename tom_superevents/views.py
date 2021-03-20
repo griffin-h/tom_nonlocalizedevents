@@ -28,7 +28,7 @@ class SupereventDetailView(DetailView):
 
     # TODO: Discuss w/David: adding SupereventTypes (via settings.py) is not supported at the moment
     template_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_superevents/superevent_detail/gravitational_wave_event.html',
+        Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_superevents/superevent_detail/gravitational_wave.html',
         Superevent.SupereventType.GAMMA_RAY_BURST: 'tom_superevents/superevent_detail/gamma_ray_burst.html',
     }
     client_mapping = {
