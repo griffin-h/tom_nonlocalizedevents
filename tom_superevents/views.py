@@ -30,6 +30,7 @@ class SupereventDetailView(DetailView):
     template_mapping = {
         Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_superevents/superevent_detail/gravitational_wave.html',
         Superevent.SupereventType.GAMMA_RAY_BURST: 'tom_superevents/superevent_detail/gamma_ray_burst.html',
+        Superevent.SupereventType.NEUTRINO: 'tom_superevents/superevent_detail/neutrino.html',
     }
     client_mapping = {
         Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_superevents.superevent_clients.gracedb.GraceDBClient',
