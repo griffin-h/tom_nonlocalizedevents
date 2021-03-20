@@ -2,7 +2,7 @@
 {% load bootstrap4 static superevent_extras %}
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_superevents/css/main.css' %}">
-{% endblock %}
+{% endblock additional_css %}
 {% block content %}
 <script>
 object_id = {{ object.id }};
@@ -66,4 +66,10 @@ $(document).ready(function(){
         </div>
     </div>
 </div>
-{% endblock %}
+<h1>Superevent Detail</h1>
+<h1>Superevent Detail</h1>
+<h1>Superevent Detail</h1>
+{{ object.id }}
+{{ object.superevent_id }}
+{{ object.superevent_url }}
+{% endblock content %}

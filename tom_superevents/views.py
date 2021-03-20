@@ -15,18 +15,10 @@ class SupereventListView(ListView):
 
 
 class SupereventDetailView(DetailView):
-    """
-    Requires the following setting:
-
-    SUPEREVENT_CLASSES = {
-        'gravitational_wave_event': 'tom_superevents.superevent_clients.gracedb.GraceDBClient',
-        'gamma_ray_burst': None
-    }
-    """
     model = Superevent
     template_name = 'tom_superevents/detail.html'
 
-    # TODO: Discuss w/David: adding SupereventTypes (via settings.py) is not supported at the moment
+    # TODO: consider combining these dictionaries
     template_mapping = {
         Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_superevents/superevent_detail/gravitational_wave.html',
         Superevent.SupereventType.GAMMA_RAY_BURST: 'tom_superevents/superevent_detail/gamma_ray_burst.html',
@@ -41,13 +33,12 @@ class SupereventDetailView(DetailView):
 
     def get_template_names(self):
         obj = self.get_object()
-        if obj.superevent_type is None or obj.superevent_type not in [choice[0] for choice in Superevent.SupereventType.choices]:
-            return super().get_template_names()
         return [self.template_mapping[obj.superevent_type]]
 
     # TODO: error handling
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # TODO: clean me up
         module_name, class_name = self.client_mapping[self.object.superevent_type].rsplit('.', 1)
         module = import_module(module_name)
         superevent_client_class = getattr(module, class_name)

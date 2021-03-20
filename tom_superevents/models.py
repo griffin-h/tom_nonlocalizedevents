@@ -29,7 +29,6 @@ class Superevent(models.Model):
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
     superevent_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
     superevent_url = models.URLField()  # TODO: this should instead be constructed via superevent_id
-    #superevent_type = models.CharField(max_length=50)  # Should eventually be ChoiceField
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
