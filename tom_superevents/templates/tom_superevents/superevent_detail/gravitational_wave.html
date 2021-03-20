@@ -2,7 +2,11 @@
 {% load bootstrap4 static superevent_extras %}
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_superevents/css/main.css' %}">
+<style type="text/css">
+.superevent-banner{ color: white }
+</style>
 {% endblock additional_css %}
+<!-- tom_superevents/superevent_detail/gravitational_wave.html -->
 {% block content %}
 <script>
 object_id = {{ object.id }};
@@ -15,57 +19,60 @@ $(document).ready(function(){
     }});
 });
 </script>
-<div id="superevent-banner" class="jumbotron jumbotron-fluid" style="width: 100%; top: 56px;">
+<div id="superevent-banner" class="jumbotron jumbotron-fluid superevent-banner" style="width: 100%; top: 56px;">
     <div>
         <div class="row mr-auto">
             <div class="col-md-2">
-                <span id="superevent_name">{{ object.superevent_id }}</span>
+                <h1><span id="superevent_name">{{ object.superevent_id }}</span></h1>
             </div>
             <div class="col-md-10">
                 <div class="row">
                     <div class="col">
-                        <span id="">Update {{ superevent_data.update_version }}</span>
+                        <h3><span id="">Update {{ superevent_data.update_version }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">MassGap {{ superevent_data.MassGap|percentage_filter }}</span>
+                        <h3><span id="">MassGap {{ superevent_data.MassGap|percentage_filter }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">NSBH {{ superevent_data.NSBH|percentage_filter }}</span>
+                        <h3><span id="">NSBH {{ superevent_data.NSBH|percentage_filter }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">90%: {{ superevent_data.90_percent }}</span>
+                        <h3><span id="">90%: {{ superevent_data.90_percent }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">{{ superevent_data.instruments }}</span>
+                        <h3><span id="">{{ superevent_data.instruments }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">FAR {{ superevent_data.far|percentage_filter }}</span>
+                        <h3><span id="">FAR {{ superevent_data.far|percentage_filter }}</span></h3>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col">
-                        <span id="">BNS {{ superevent_data.BNS|percentage_filter }}</span>
+                        <h3><span id="">BNS {{ superevent_data.BNS|percentage_filter }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}</span>
+                        <h3><span id="">Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">BBH {{ superevent_data.BBH|percentage_filter }}</span>
+                        <h3><span id="">BBH {{ superevent_data.BBH|percentage_filter }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">50%: {{ superevent_data.50_percent }}</span>
+                        <h3><span id="">50%: {{ superevent_data.50_percent }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">{{ superevent_data.unknown_field }}</span>
+                        <h3><span id="">{{ superevent_data.unknown_field }}</span></h3>
                     </div>
                     <div class="col">
-                        <span id="">Has NS / Rem: {{ superevent_data.HasNS }} / {{ superevent_data.HasRemnant }}</span>
+                        <h3>
+                            <span id="">NS/Rem: {{ superevent_data.HasNS }}/{{ superevent_data.HasRemnant }}</span>
+                        </h3>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<h1>Superevent Detail (GW)</h1>
 <h1>Superevent Detail (GW)</h1>
 <h1>Superevent Detail (GW)</h1>
 <h1>Superevent Detail (GW)</h1>
