@@ -39,11 +39,12 @@ class SupereventDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # TODO: clean me up
-        module_name, class_name = self.client_mapping[self.object.superevent_type].rsplit('.', 1)
-        module = import_module(module_name)
-        superevent_client_class = getattr(module, class_name)
-        superevent_client = superevent_client_class()
-        context['superevent_data'] = superevent_client.get_superevent_data(self.object.superevent_id)
+        if self.client_mapping[self.object.superevent_type] is not None:
+            module_name, class_name = self.client_mapping[self.object.superevent_type].rsplit('.', 1)
+            module = import_module(module_name)
+            superevent_client_class = getattr(module, class_name)
+            superevent_client = superevent_client_class()
+            context['superevent_data'] = superevent_client.get_superevent_data(self.object.superevent_id)
         return context
 
 
