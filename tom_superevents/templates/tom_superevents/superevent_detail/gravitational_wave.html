@@ -7,7 +7,7 @@
 </style>
 {% endblock additional_css %}
 <!-- tom_superevents/superevent_detail/gravitational_wave.html -->
-{% block content %}
+{% block page_banner %}
 <script>
 object_id = {{ object.id }};
 object_api_url = "{{ object.api_url }}";
@@ -72,11 +72,13 @@ $(document).ready(function(){
         </div>
     </div>
 </div>
-<h1>Superevent Detail (GW)</h1>
-<h1>Superevent Detail (GW)</h1>
-<h1>Superevent Detail (GW)</h1>
-<h1>Superevent Detail (GW)</h1>
-{{ object.id }}
-{{ object.superevent_id }}
-{{ object.superevent_url }}
+{% endblock page_banner %}
+
+{% block content %}
+<div>
+    <h1>Superevent Detail (GW)</h1>
+    {{ object.id }}
+    {{ object.superevent_id }}
+    {{ object.superevent_url }}
+</div>
 {% endblock content %}
