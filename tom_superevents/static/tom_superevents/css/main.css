@@ -1,6 +1,6 @@
 #superevent-banner {
-    position: absolute;
-    left: 0;
+    width: 100%;
+    position: relative;
     background-color: #06345c;
 }
 

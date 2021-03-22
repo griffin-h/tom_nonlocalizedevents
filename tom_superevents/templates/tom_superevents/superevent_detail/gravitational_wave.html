@@ -1,11 +1,13 @@
 {% extends 'tom_common/base.html' %}
 {% load bootstrap4 static superevent_extras %}
+
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_superevents/css/main.css' %}">
+<!-- put template-specific css here -->
 <style type="text/css">
-.superevent-banner{ color: white }
 </style>
 {% endblock additional_css %}
+
 <!-- tom_superevents/superevent_detail/gravitational_wave.html -->
 {% block page_banner %}
 <script>
@@ -19,7 +21,7 @@ $(document).ready(function(){
     }});
 });
 </script>
-<div id="superevent-banner" class="jumbotron jumbotron-fluid superevent-banner" style="width: 100%; top: 56px;">
+<div id="superevent-banner" class="jumbotron jumbotron-fluid text-white">
     <div>
         <div class="row mr-auto">
             <div class="col-md-2">
@@ -51,7 +53,8 @@ $(document).ready(function(){
                         <h3><span id="">BNS {{ superevent_data.BNS|percentage_filter }}</span></h3>
                     </div>
                     <div class="col">
-                        <h3><span id="">Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}</span></h3>
+                        <h3><span id="">Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}</span>
+                        </h3>
                     </div>
                     <div class="col">
                         <h3><span id="">BBH {{ superevent_data.BBH|percentage_filter }}</span></h3>
