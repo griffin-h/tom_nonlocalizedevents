@@ -11,5 +11,5 @@ def percentage_filter(value):
     try:
         return f"{'%.1f' % (float(value) * 100)}%"
     except Exception:
-        print(f'exceptiopn: {value}')
+        print(f'exception: {value}')
         return value

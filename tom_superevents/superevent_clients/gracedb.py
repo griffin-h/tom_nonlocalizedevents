@@ -9,6 +9,7 @@ GRACEDB_EVENT_URL = f'{GRACEDB_BASE_URL}/superevents'
 GRACEDB_API_URL = f'{GRACEDB_BASE_URL}/api/superevents'
 
 
+@DeprecationWarning
 class GraceDBClient:
 
     def __init__(self, *args, **kwargs):

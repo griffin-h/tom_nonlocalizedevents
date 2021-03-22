@@ -1,5 +1,5 @@
 {% extends 'tom_common/base.html' %}
-{% load bootstrap4 static superevent_extras %}
+{% load bootstrap4 static superevent_extras tom_common_extras %}
 
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_superevents/css/main.css' %}">
@@ -8,19 +8,34 @@
 </style>
 {% endblock additional_css %}
 
-<!-- tom_superevents/superevent_detail/gravitational_wave.html -->
-{% block page_banner %}
+{% block javascript %}
 <script>
-object_id = {{ object.id }};
-object_api_url = "{{ object.api_url }}";
-$(document).ready(function(){
-    $.noConflict();
-    console.log(object_api_url);
-    jQuery.ajax({url: object_api_url, success: function(result){
-        console.log(result);
-    }});
-});
+    // AJAX call to populate fields--this works, but doesn't include percentage truncation
+    // object_id = {{ object.id }};
+    // object_api_url = "{{ object.api_url }}";
+    // object_api_url = "http://skip.dev.hop.scimma.org/api/alerts/?topic=6&event_trigger_number=" + "{{ object.superevent_id }}" + "&ordering=-alert_timestamp";
+    // $(document).ready(function() {
+    //     console.log(object_api_url);
+    //     jQuery.ajax({url: object_api_url, success: function(response){
+    //         console.log(response);
+    //         var superevent_data = response["results"][0];
+    //         jQuery('#update_version').html(superevent_data['extracted_fields']['update_version']);
+    //         jQuery('#mass_gap').html(superevent_data['extracted_fields']['MassGap']);
+    //         jQuery('#nsbh').html(superevent_data['extracted_fields']['NSBH']);
+    //         jQuery('#area_90').html(superevent_data['extracted_fields']['area_90']);
+    //         jQuery('#instruments').html(superevent_data['extracted_fields']['Instruments']);
+    //         jQuery('#far').html(superevent_data['extracted_fields']['FAR']);
+    //         jQuery('#bns').html(superevent_data['extracted_fields']['BNS']);
+    //         jQuery('#terrestrial').html(superevent_data['extracted_fields']['Terrestrial']);
+    //         jQuery('#bbh').html(superevent_data['extracted_fields']['BBH']);
+    //         jQuery('#area_50').html(superevent_data['extracted_fields']['area_50']);
+    //         jQuery('#has_ns_remnant').html(superevent_data['extracted_fields']['MassGap']);
+    //     }, dataType: "json"});
+    // });
 </script>
+{% endblock %}
+
+{% block page_banner %}
 <div id="superevent-banner" class="py-4 pl-3 jumbotron jumbotron-fluid text-white">
     <div class="row mr-auto">
         <div class="col-md-2">
@@ -29,44 +44,44 @@ $(document).ready(function(){
         <div class="col-md-10">
             <div class="row">
                 <div class="col">
-                    <h3><span id="">Update {{ superevent_data.update_version }}</span></h3>
+                    <h3>Update <span id="update_version">{{ superevent_data.update_version }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">MassGap {{ superevent_data.MassGap|percentage_filter }}</span></h3>
+                    <h3>MassGap <span id="mass_gap">{{ superevent_data.MassGap|percentage_filter }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">NSBH {{ superevent_data.NSBH|percentage_filter }}</span></h3>
+                    <h3><span id="nsbh">NSBH {{ superevent_data.NSBH|percentage_filter }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">90%: {{ superevent_data.90_percent }}</span></h3>
+                    <h3><span id="area_90">90%: {{ superevent_data.area_90|truncate_number }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">{{ superevent_data.instruments }}</span></h3>
+                    <h3><span id="instruments">{{ superevent_data.Instruments }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">FAR {{ superevent_data.far|percentage_filter }}</span></h3>
+                    <h3><span id="far">FAR {{ superevent_data.far|percentage_filter }}</span></h3>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
-                    <h3><span id="">BNS {{ superevent_data.BNS|percentage_filter }}</span></h3>
+                    <h3><span id="bns">BNS {{ superevent_data.BNS|percentage_filter }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}</span>
+                    <h3><span id="terrestrial">Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}</span>
                     </h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">BBH {{ superevent_data.BBH|percentage_filter }}</span></h3>
+                    <h3><span id="bbh">BBH {{ superevent_data.BBH|percentage_filter }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">50%: {{ superevent_data.50_percent }}</span></h3>
+                    <h3><span id="area_50">50%: {{ superevent_data.area_50|truncate_number }}</span></h3>
                 </div>
                 <div class="col">
                     <h3><span id="">{{ superevent_data.unknown_field }}</span></h3>
                 </div>
                 <div class="col">
                     <h3>
-                        <span id="">NS/Rem: {{ superevent_data.HasNS }}/{{ superevent_data.HasRemnant }}</span>
+                        <span id="has_ns_remnant">NS/Rem: {{ superevent_data.HasNS }}/{{ superevent_data.HasRemnant }}</span>
                     </h3>
                 </div>
             </div>

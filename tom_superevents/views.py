@@ -5,6 +5,7 @@ from django.views.generic import DetailView, ListView
 from rest_framework import viewsets
 from rest_framework import permissions
 
+from tom_superevents.superevent_clients.gravitational_wave import GravitationalWaveClient
 from .models import Superevent, EventLocalization
 from .serializers import SupereventSerializer, EventLocalizationSerializer
 
@@ -25,7 +26,7 @@ class SupereventDetailView(DetailView):
         Superevent.SupereventType.NEUTRINO: 'tom_superevents/superevent_detail/neutrino.html',
     }
     client_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_superevents.superevent_clients.gracedb.GraceDBClient',
+        Superevent.SupereventType.GRAVITATIONAL_WAVE: GravitationalWaveClient,
         Superevent.SupereventType.GAMMA_RAY_BURST: None,
         Superevent.SupereventType.NEUTRINO: None,
         Superevent.SupereventType.UNKNOWN: None,
@@ -38,13 +39,8 @@ class SupereventDetailView(DetailView):
     # TODO: error handling
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # TODO: clean me up
-        if self.client_mapping[self.object.superevent_type] is not None:
-            module_name, class_name = self.client_mapping[self.object.superevent_type].rsplit('.', 1)
-            module = import_module(module_name)
-            superevent_client_class = getattr(module, class_name)
-            superevent_client = superevent_client_class()
-            context['superevent_data'] = superevent_client.get_superevent_data(self.object.superevent_id)
+        superevent_client = GravitationalWaveClient()
+        context['superevent_data'] = superevent_client.get_superevent_data(self.object.superevent_id)
         return context
 
 
