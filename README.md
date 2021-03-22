@@ -28,7 +28,9 @@ superevent electromagnetic (EM) follow up observations.
    ]
    ```
 
-4. Run ``python manage.py migrate`` to create the tom_superevent models.
+4. Copy ``tom_superevents/templates/tom_common/base.html`` into your project root's ``templates/tom_common/base.html``.
+
+5. Run ``python manage.py migrate`` to create the tom_superevent models.
 
 
 ## Running the tests

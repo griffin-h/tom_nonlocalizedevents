@@ -9,17 +9,19 @@
       <tr>
           <th scope="col">#</th>
           <th scope="col">Superevent ID</th>
+          <th scope="col">Superevent Type</th>
       </tr>
       </thead>
       <tbody>
       {% for superevent in object_list %}
       <tr>
-          <th scope="row">
+          <td scope="row">
               <a href="{% url 'superevents:detail'  superevent.id %}">{{ superevent.id }}</a>
-          </th>
+          </td>
           <td>
               <a href="{{ superevent.superevent_url }}">{{ superevent.superevent_id }}</a>
           </td>
+          <td>{{ superevent.superevent_type }}</td>
       </tr>
       {% endfor %}
       </tbody>
