@@ -59,7 +59,7 @@
                     <h3><span id="instruments">{{ superevent_data.Instruments }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="far">FAR {{ superevent_data.far|percentage_filter }}</span></h3>
+                    <h3><span id="far">FAR {{ superevent_data.FAR|percentage_filter }}</span></h3>
                 </div>
             </div>
             <div class="row">
@@ -92,9 +92,15 @@
 
 {% block content %}
 <div>
-    <h1>Superevent Detail (GW)</h1>
-    {{ object.id }}
-    {{ object.superevent_id }}
-    {{ object.superevent_url }}
+    <div class="row">
+        <div class="col-md-4">
+            <h3>Superevent Detail (GW)</h3>
+                {{ object.id }}
+                {{ object.superevent_id }}
+                {{ object.superevent_url }}
+            </div>
+        <div class="col-md-4"><img src="{{ fwhm_url }}"/></div>
+        <div class="col-md-4 float-right"><img src="{{ skymap_url }}" height="350 px"/></div>
+    </div>
 </div>
 {% endblock content %}

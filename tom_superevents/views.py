@@ -41,6 +41,7 @@ class SupereventDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         superevent_client = GravitationalWaveClient()
         context['superevent_data'] = superevent_client.get_superevent_data(self.object.superevent_id)
+        context.update(superevent_client.get_additional_context_data(self.object.superevent_id))
         return context
 
 
