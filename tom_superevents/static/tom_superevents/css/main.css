@@ -1,7 +1,13 @@
 #superevent-banner {
-    position: absolute;
-    left: 0;
+    width: 100%;
     background-color: #06345c;
+}
+
+
+.banner_content {
+}
+
+.page_banner {
 }
 
 .span {
