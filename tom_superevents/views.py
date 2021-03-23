@@ -26,7 +26,7 @@ class SupereventDetailView(DetailView):
         Superevent.SupereventType.NEUTRINO: 'tom_superevents/superevent_detail/neutrino.html',
     }
     client_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE: GravitationalWaveClient,
+        Superevent.SupereventType.GRAVITATIONAL_WAVE: GravitationalWaveClient(),
         Superevent.SupereventType.GAMMA_RAY_BURST: None,
         Superevent.SupereventType.NEUTRINO: None,
         Superevent.SupereventType.UNKNOWN: None,
@@ -39,9 +39,12 @@ class SupereventDetailView(DetailView):
     # TODO: error handling
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        superevent_client = GravitationalWaveClient()
-        context['superevent_data'] = superevent_client.get_superevent_data(self.object.superevent_id)
-        context.update(superevent_client.get_additional_context_data(self.object.superevent_id))
+        obj = self.get_object()
+        superevent_client = self.client_mapping[obj.superevent_type]
+        # TODO: should define superevent_client API (via ABC) for clients to implement
+        if superevent_client is not None:
+            context['superevent_data'] = superevent_client.get_superevent_data(obj.superevent_id)
+            context.update(superevent_client.get_additional_context_data(obj.superevent_id))
         return context
 
 
