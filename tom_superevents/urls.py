@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 
 from tom_common.api_router import SharedAPIRootRouter
 
