@@ -40,7 +40,8 @@ class GravitationalWaveClient:
         return skymap_data
 
     def get_superevent_data(self, superevent_id: str) -> dict:
-        return requests.get(f'{SKIP_API_URL}/?event_trigger_number={superevent_id}&topic=6&ordering=-alert_timestamp').json()['results'][0]['extracted_fields']
+        request_url = f'{SKIP_API_URL}/?event_trigger_number={superevent_id}&topic=6&ordering=-alert_timestamp'
+        return requests.get(request_url).json()['results'][0]['extracted_fields']
 
     def get_additional_context_data(self, superevent_id: str) -> dict:
         additional_context_data = {}
