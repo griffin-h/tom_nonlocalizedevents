@@ -22,7 +22,7 @@ class GraceDBClient:
             gracedb_data = gracedb_superevent.get()
             latest_voevent = gracedb_superevent.voevents.get()[-1]
             voevent_file = gracedb_superevent.files[latest_voevent['filename']].get()
-            
+
             superevent_data = {}
             superevent_data['update_version'] = latest_voevent['filename'].split('-')[1]
             superevent_data['far'] = gracedb_data['far']

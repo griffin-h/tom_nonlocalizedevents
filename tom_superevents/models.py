@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 
 
@@ -25,7 +24,6 @@ class Superevent(models.Model):
         default=SupereventType.GRAVITATIONAL_WAVE,
     )
 
-
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
     superevent_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
     superevent_url = models.URLField()  # TODO: this should instead be constructed via superevent_id
@@ -42,4 +40,3 @@ class EventLocalization(models.Model):
     """
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-

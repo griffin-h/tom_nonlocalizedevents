@@ -1,6 +1,3 @@
-from importlib import import_module
-
-from django.conf import settings
 from django.views.generic import DetailView, ListView
 from rest_framework import viewsets
 from rest_framework import permissions
