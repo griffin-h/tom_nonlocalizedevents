@@ -44,44 +44,44 @@
         <div class="col-md-10">
             <div class="row">
                 <div class="col">
-                    <h3><span id="update_version">{{ superevent_data.data_version }}</span></h3>
+                    <h3><span id="update_version">{{ superevent_data.event_data.tag }} {{ superevent_data.event_data.sequence_number }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3>MassGap <span id="mass_gap">{{ superevent_data.MassGap|percentage_filter }}</span></h3>
+                    <h3>MassGap <span id="mass_gap">{{ superevent_data.event_data.attributes.prob_massgap|percentage_filter }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="nsbh">NSBH {{ superevent_data.NSBH|percentage_filter }}</span></h3>
+                    <h3><span id="nsbh">NSBH {{ superevent_data.event_data.attributes.prob_nsbh|percentage_filter }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="area_90">90%: {{ superevent_data.area_90|truncate_number }}</span></h3>
+                    <h3><span id="area_90">90%: {{ superevent_data.event_data.attributes.area_90|truncate_number }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="instruments">{{ superevent_data.Instruments }}</span></h3>
+                    <h3><span id="instruments">{{ superevent_data.event_data.attributes.Instruments }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="far">FAR {{ superevent_data.FAR|percentage_filter }}</span></h3>
+                    <h3><span id="far">FAR {{ superevent_data.event_data.attributes.far|percentage_filter }}</span></h3>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
-                    <h3><span id="bns">BNS {{ superevent_data.BNS|percentage_filter }}</span></h3>
+                    <h3><span id="bns">BNS {{ superevent_data.event_data.attributes.prob_bns|percentage_filter }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="terrestrial">Terrestrial {{ superevent_data.Terrestrial|percentage_filter }}</span>
+                    <h3><span id="terrestrial">Terrestrial {{ superevent_data.event_data.attributes.prob_terres|percentage_filter }}</span>
                     </h3>
                 </div>
                 <div class="col">
-                    <h3><span id="bbh">BBH {{ superevent_data.BBH|percentage_filter }}</span></h3>
+                    <h3><span id="bbh">BBH {{ superevent_data.event_data.attributes.prob_bbh|percentage_filter }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="area_50">50%: {{ superevent_data.area_50|truncate_number }}</span></h3>
+                    <h3><span id="area_50">50%: {{ superevent_data.event_data.attributes.area_50|truncate_number }}</span></h3>
                 </div>
                 <div class="col">
-                    <h3><span id="">{{ superevent_data.unknown_field }}</span></h3>
+                    <h3><span id="">{{ superevent_data.event_data.attributes.unknown_field }}</span></h3>
                 </div>
                 <div class="col">
                     <h3>
-                        <span id="has_ns_remnant">NS/Rem: {{ superevent_data.HasNS }}/{{ superevent_data.HasRemnant }}</span>
+                        <span id="has_ns_remnant">NS/Rem: {{ superevent_data.event_data.attributes.prob_ns }}/{{ superevent_data.event_data.attributes.prob_remnant }}</span>
                     </h3>
                 </div>
             </div>
@@ -93,13 +93,12 @@
 {% block content %}
 <div>
     <div class="row">
-        <div class="col-md-4">
-            <h3>Superevent Detail (GW)</h3>
-                {{ object.id }}
-                {{ object.superevent_id }}
-                {{ object.superevent_url }}
-            </div>
+        <div class="col-md-8">
+            {% alert_table %}
+        </div>
+        {% comment %}
         <div class="col-md-4"><img src="{{ fwhm_url }}"/></div>
+        {% endcomment %}
         <div class="col-md-4 float-right"><img src="{{ skymap_url }}" height="350 px"/></div>
     </div>
 </div>

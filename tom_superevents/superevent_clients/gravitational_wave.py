@@ -7,7 +7,7 @@ GRACEDB_BASE_URL = 'https://gracedb.ligo.org'
 GRACEDB_EVENT_URL = f'{GRACEDB_BASE_URL}/superevents'
 GRACEDB_API_URL = f'{GRACEDB_BASE_URL}/api/superevents/files'
 SKIP_BASE_URL = 'http://skip.dev.hop.scimma.org'
-SKIP_API_URL = f'{SKIP_BASE_URL}/api/alerts'
+SKIP_API_URL = f'{SKIP_BASE_URL}/api/events'
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,12 @@ class GravitationalWaveClient:
         return skymap_data
 
     def get_superevent_data(self, superevent_id: str) -> dict:
-        return requests.get(f'{SKIP_API_URL}/?event_trigger_number={superevent_id}&topic=6&ordering=-alert_timestamp').json()['results'][0]['extracted_fields']
+        url = requests.get(f'{SKIP_API_URL}/?identifier={superevent_id}').json()['results'][0]['event_detail']
+        response = requests.get(url).json()
+        superevent_data = {}
+        superevent_data['event_data'] = response['event_attributes'][0]
+        superevent_data['alerts'] = response['alerts'][:10]
+        return superevent_data
 
     def get_additional_context_data(self, superevent_id: str) -> dict:
         additional_context_data = {}

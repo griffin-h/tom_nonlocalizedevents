@@ -16,6 +16,7 @@ class GraceDBClient:
         self.gracedb_client = Client()
 
     def get_superevent_data(self, superevent_id: str) -> dict:
+        print('this isn\'t great')
         try:
             gracedb_superevent = self.gracedb_client.superevents[superevent_id]
             gracedb_data = gracedb_superevent.get()

@@ -1,0 +1,16 @@
+<table>
+    <tr>
+        <th>Message</th>
+        <th>Date</th>
+        <th>From</th>
+        <th></th>
+    </tr>
+    {% for alert in alerts %}
+    <tr>
+        <td>{{ alert.identifier }}</td>
+        <td>{{ alert.timestamp }}</td>
+        <td>{{ alert.from }}</td>
+        <td>{{ alert.subject|truncatechars:50 }}</td>
+    </tr>
+    {% endfor %}
+</table>
