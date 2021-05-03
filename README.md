@@ -1,3 +1,4 @@
+[![pypi](https://img.shields.io/pypi/v/tom-superevents.svg)](https://pypi.python.org/pypi/tom-superevents)
 [![run-tests](https://github.com/TOMToolkit/tom_superevents/actions/workflows/run-tests.yml/badge.svg)](https://github.com/TOMToolkit/tom_superevents/actions/workflows/run-tests.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/cbcf7ce565d8450f86fff863ef061ff9)](https://www.codacy.com/gh/TOMToolkit/tom_superevents/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TOMToolkit/tom_superevents&amp;utm_campaign=Badge_Grade)
 [![Coverage Status](https://coveralls.io/repos/github/TOMToolkit/tom_superevents/badge.svg?branch=main)](https://coveralls.io/github/TOMToolkit/tom_superevents?branch=main)
