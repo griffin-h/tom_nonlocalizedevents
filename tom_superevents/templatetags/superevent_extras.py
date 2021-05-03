@@ -27,7 +27,8 @@ def alert_table(context):
                'timestamp': str(parse(alert['timestamp']).date()),
                'from': alert['parsed_message']['from'].split(' at ', 1)[0],
                'subject': alert['parsed_message']['subject'].split(':', 1)[-1]
-               } for alert in context['superevent_data']['alerts'][:8] if alert['parsed_message'].get('title', None) != 'GCN/LVC NOTICE']
+               } for alert in context['superevent_data']['alerts'][:8]
+              if alert['parsed_message'].get('title', None) != 'GCN/LVC NOTICE']
     superevent_alert = None
     for alert in context['superevent_data']['alerts']:
         if alert['parsed_message'].get('title', None) == 'GCN/LVC NOTICE':
