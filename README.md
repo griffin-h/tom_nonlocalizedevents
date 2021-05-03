@@ -11,9 +11,8 @@ superevent electromagnetic (EM) follow up observations.
 
 1. Install the package into your TOM environment:
     ```bash
-    pip install tom_superevents  # TBD: tom_superevents is not on PyPI yet
+    pip install tom_superevents
    ```
-  NOTE: Until `tom_superevents` is ready for PyPI, installation in to your environment is best achieved by downloading the source and running `pip install -e /path/to/tom_superevents`
 
 2. In your project `settings.py`, add `tom_superevents` to your `INSTALLED_APPS` setting:
 
