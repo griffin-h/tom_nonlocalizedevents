@@ -93,13 +93,11 @@
 {% block content %}
 <div>
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-6">
             {% alert_table %}
         </div>
-        {% comment %}
-        <div class="col-md-4"><img src="{{ fwhm_url }}"/></div>
-        {% endcomment %}
-        <div class="col-md-4 float-right"><img src="{{ skymap_url }}" height="350 px"/></div>
+        <div class="col-md-3 float-right"><img src="{{ fwhm_url }}"/></div>
+        <div class="col-md-3 float-right"><img src="{{ skymap_url }}" height="400 px"/></div>
     </div>
 </div>
 {% endblock content %}

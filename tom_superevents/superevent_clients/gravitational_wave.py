@@ -44,7 +44,8 @@ class GravitationalWaveClient:
         response = requests.get(url).json()
         superevent_data = {}
         superevent_data['event_data'] = response['event_attributes'][0]
-        superevent_data['alerts'] = response['alerts'][:10]
+        superevent_data['alerts'] = response['alerts']
+        superevent_data['url'] = f'{GRACEDB_EVENT_URL}/{superevent_id}/'
         return superevent_data
 
     def get_additional_context_data(self, superevent_id: str) -> dict:

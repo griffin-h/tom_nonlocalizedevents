@@ -22,12 +22,21 @@ def alert_table(context):
     """
     Displays the alerts of an event.
     """
-    alerts = [{'identifier': f'GCN {alert["identifier"]}',
+    alerts = [{'url': f'http://skip.dev.hop.scimma.org/api/v2/alerts/{alert["id"]}/',
+               'identifier': f'GCN {alert["identifier"]}',
                'timestamp': str(parse(alert['timestamp']).date()),
                'from': alert['parsed_message']['from'].split(' at ', 1)[0],
                'subject': alert['parsed_message']['subject'].split(':', 1)[-1]
-               } for alert in context['superevent_data']['alerts'] if alert['parsed_message'].get('title', None) == 'GCN CIRCULAR']
+               } for alert in context['superevent_data']['alerts'][:8] if alert['parsed_message'].get('title', None) != 'GCN/LVC NOTICE']
+    superevent_alert = None
+    for alert in context['superevent_data']['alerts']:
+        if alert['parsed_message'].get('title', None) == 'GCN/LVC NOTICE':
+            superevent_alert = alert
+            superevent_alert['timestamp'] = str(parse(superevent_alert['timestamp']).date())
+            superevent_alert['url'] = context['superevent_data']['url']
+            break
 
     return {
-        'alerts': alerts
+        'alerts': alerts,
+        'superevent_alert': superevent_alert
     }
