@@ -8,33 +8,6 @@
 </style>
 {% endblock additional_css %}
 
-{% block javascript %}
-<script>
-    // AJAX call to populate fields--this works, but doesn't include percentage truncation
-    // object_id = {{ object.id }};
-    // object_api_url = "{{ object.api_url }}";
-    // object_api_url = "http://skip.dev.hop.scimma.org/api/alerts/?topic=6&event_trigger_number=" + "{{ object.superevent_id }}" + "&ordering=-alert_timestamp";
-    // $(document).ready(function() {
-    //     console.log(object_api_url);
-    //     jQuery.ajax({url: object_api_url, success: function(response){
-    //         console.log(response);
-    //         var superevent_data = response["results"][0];
-    //         jQuery('#update_version').html(superevent_data['extracted_fields']['update_version']);
-    //         jQuery('#mass_gap').html(superevent_data['extracted_fields']['MassGap']);
-    //         jQuery('#nsbh').html(superevent_data['extracted_fields']['NSBH']);
-    //         jQuery('#area_90').html(superevent_data['extracted_fields']['area_90']);
-    //         jQuery('#instruments').html(superevent_data['extracted_fields']['Instruments']);
-    //         jQuery('#far').html(superevent_data['extracted_fields']['FAR']);
-    //         jQuery('#bns').html(superevent_data['extracted_fields']['BNS']);
-    //         jQuery('#terrestrial').html(superevent_data['extracted_fields']['Terrestrial']);
-    //         jQuery('#bbh').html(superevent_data['extracted_fields']['BBH']);
-    //         jQuery('#area_50').html(superevent_data['extracted_fields']['area_50']);
-    //         jQuery('#has_ns_remnant').html(superevent_data['extracted_fields']['MassGap']);
-    //     }, dataType: "json"});
-    // });
-</script>
-{% endblock %}
-
 {% block page_banner %}
 <div id="superevent-banner" class="py-4 pl-3 jumbotron jumbotron-fluid text-white">
     <div class="row mr-auto">
