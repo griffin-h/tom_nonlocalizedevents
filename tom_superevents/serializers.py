@@ -14,7 +14,9 @@ class SupereventSerializer(serializers.HyperlinkedModelSerializer):
 
 class EventCandidateSerializer(serializers.ModelSerializer):
     """
-    Serializer class for the event candidate.
+    Serializer class for the ``EventCandidate``. ``PrimaryKeyRelatedField``s are used in order to allow creating an
+    ``EventCandidate`` with just a primary key, and ``to_representation`` is then overridden for proper display values.
+    See: https://www.django-rest-framework.org/api-guide/relations/#custom-relational-fields
     """
     superevent = serializers.PrimaryKeyRelatedField(queryset=Superevent.objects.all())
     target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all())
