@@ -3,8 +3,8 @@ from rest_framework import viewsets
 from rest_framework import permissions
 
 from tom_superevents.superevent_clients.gravitational_wave import GravitationalWaveClient
-from .models import Superevent, EventLocalization
-from .serializers import SupereventSerializer, EventLocalizationSerializer
+from .models import EventCandidate, EventLocalization, Superevent
+from .serializers import EventCandidateSerializer, EventLocalizationSerializer, SupereventSerializer
 
 
 class SupereventListView(ListView):
@@ -51,6 +51,12 @@ class SupereventViewSet(viewsets.ModelViewSet):
     """
     queryset = Superevent.objects.all()
     serializer_class = SupereventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class EventCandidateViewSet(viewsets.ModelViewSet):
+    queryset = EventCandidate.objects.all()
+    serializer_class = EventCandidateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 

@@ -1,5 +1,7 @@
 from django.db import models
 
+from tom_targets.models import Target
+
 
 class Superevent(models.Model):
     """Represents a Superevent being followed-up upon by this TOM.
@@ -33,6 +35,11 @@ class Superevent(models.Model):
 
     def __str__(self):
         return self.superevent_id
+
+
+class EventCandidate(models.Model):
+    target = models.ForeignKey(Target, on_delete=models.CASCADE)
+    superevent = models.ForeignKey(Superevent, on_delete=models.CASCADE)
 
 
 class EventLocalization(models.Model):
