@@ -37,7 +37,7 @@ class Superevent(models.Model):
         return self.superevent_id
 
 
-class EventCandidate(models.Model):
+class EventCandidate(models.Model):  # TODO: should the target/superevent combination be unique?
     target = models.ForeignKey(Target, on_delete=models.CASCADE)
     superevent = models.ForeignKey(Superevent, on_delete=models.CASCADE)
 

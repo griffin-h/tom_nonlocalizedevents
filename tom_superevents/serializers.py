@@ -12,6 +12,12 @@ class SupereventSerializer(serializers.HyperlinkedModelSerializer):
                   'id', 'created', 'modified']
 
 
+class BulkCreateEventCandidateListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        event_candidates = [EventCandidate(**item) for item in validated_data]
+        return EventCandidate.objects.bulk_create(event_candidates)
+
+
 class EventCandidateSerializer(serializers.ModelSerializer):
     """
     Serializer class for the ``EventCandidate``. ``PrimaryKeyRelatedField``s are used in order to allow creating an
@@ -24,6 +30,7 @@ class EventCandidateSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventCandidate
         fields = '__all__'
+        list_serializer_class = BulkCreateEventCandidateListSerializer
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -37,5 +44,4 @@ class EventCandidateSerializer(serializers.ModelSerializer):
 class EventLocalizationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = EventLocalization
-        fields = [
-            'id', 'created', 'modified']
+        fields = ['id', 'created', 'modified']

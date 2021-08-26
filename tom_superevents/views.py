@@ -59,6 +59,14 @@ class EventCandidateViewSet(viewsets.ModelViewSet):
     serializer_class = EventCandidateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_serializer(self, *args, **kwargs):
+        # In order to ensure the list_serializer_class is used for bulk_create, we check that the POST data is a list
+        # and add `many = True` to the kwargs
+        if isinstance(kwargs.get('data', {}), list):
+            kwargs['many'] = True
+
+        return super().get_serializer(*args, **kwargs)
+
 
 class EventLocalizationViewSet(viewsets.ModelViewSet):
     """
