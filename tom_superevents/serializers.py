@@ -5,13 +5,6 @@ from tom_targets.serializers import TargetSerializer
 from tom_superevents.models import EventCandidate, EventLocalization, Superevent
 
 
-class SupereventSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Superevent
-        fields = ['superevent_id', 'superevent_url',
-                  'id', 'created', 'modified']
-
-
 class BulkCreateEventCandidateListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         event_candidates = [EventCandidate(**item) for item in validated_data]
@@ -35,10 +28,23 @@ class EventCandidateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['target'] = TargetSerializer(Target.objects.get(pk=representation['target'])).data
-        representation['superevent'] = SupereventSerializer(
-            Superevent.objects.get(pk=representation['superevent'])
-        ).data
+        representation['superevent'] = Superevent.objects.get(pk=representation['superevent']).superevent_id
         return representation
+
+
+class SupereventSerializer(serializers.HyperlinkedModelSerializer):
+    event_candidates = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Superevent
+        fields = ['superevent_id', 'superevent_url',
+                  'id', 'event_candidates', 'created', 'modified']
+
+    def get_event_candidates(self, instance):
+        alerts = instance.eventcandidate_set.all()
+        # This returns the superevent identifier, which means it's duplicated in the response. The SupereventSerializer
+        # should therefore use its own custom EventCandidateSerializer rather than the one defined above
+        return EventCandidateSerializer(alerts, many=True).data
 
 
 class EventLocalizationSerializer(serializers.HyperlinkedModelSerializer):

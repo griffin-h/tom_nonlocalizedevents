@@ -51,13 +51,13 @@ class SupereventViewSet(viewsets.ModelViewSet):
     """
     queryset = Superevent.objects.all()
     serializer_class = SupereventSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = []
 
 
 class EventCandidateViewSet(viewsets.ModelViewSet):
     queryset = EventCandidate.objects.all()
     serializer_class = EventCandidateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = []  # TODO: re-implement auth permissions
 
     def get_serializer(self, *args, **kwargs):
         # In order to ensure the list_serializer_class is used for bulk_create, we check that the POST data is a list
