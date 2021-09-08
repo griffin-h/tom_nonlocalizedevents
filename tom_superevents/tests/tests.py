@@ -38,6 +38,3 @@ class TestEventLocalizationViewSet(SupereventAPITestCase):
         response = self.client.get(reverse('api:eventlocalization-list'))
 
         self.assertEqual(response.json()['count'], 2)
-        self.assertContains(response, '{}')
-
-

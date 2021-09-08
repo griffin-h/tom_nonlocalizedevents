@@ -1,13 +1,10 @@
-from importlib import import_module
-
-from django.conf import settings
 from django.views.generic import DetailView, ListView
 from rest_framework import viewsets
 from rest_framework import permissions
 
 from tom_superevents.superevent_clients.gravitational_wave import GravitationalWaveClient
-from .models import Superevent, EventLocalization
-from .serializers import SupereventSerializer, EventLocalizationSerializer
+from .models import EventCandidate, EventLocalization, Superevent
+from .serializers import EventCandidateSerializer, EventLocalizationSerializer, SupereventSerializer
 
 
 class SupereventListView(ListView):
@@ -57,7 +54,21 @@ class SupereventViewSet(viewsets.ModelViewSet):
     """
     queryset = Superevent.objects.all()
     serializer_class = SupereventSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = []
+
+
+class EventCandidateViewSet(viewsets.ModelViewSet):
+    queryset = EventCandidate.objects.all()
+    serializer_class = EventCandidateSerializer
+    permission_classes = []  # TODO: re-implement auth permissions
+
+    def get_serializer(self, *args, **kwargs):
+        # In order to ensure the list_serializer_class is used for bulk_create, we check that the POST data is a list
+        # and add `many = True` to the kwargs
+        if isinstance(kwargs.get('data', {}), list):
+            kwargs['many'] = True
+
+        return super().get_serializer(*args, **kwargs)
 
 
 class EventLocalizationViewSet(viewsets.ModelViewSet):

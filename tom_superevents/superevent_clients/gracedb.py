@@ -16,12 +16,13 @@ class GraceDBClient:
         self.gracedb_client = Client()
 
     def get_superevent_data(self, superevent_id: str) -> dict:
+        print('this isn\'t great')
         try:
             gracedb_superevent = self.gracedb_client.superevents[superevent_id]
             gracedb_data = gracedb_superevent.get()
             latest_voevent = gracedb_superevent.voevents.get()[-1]
             voevent_file = gracedb_superevent.files[latest_voevent['filename']].get()
-            
+
             superevent_data = {}
             superevent_data['update_version'] = latest_voevent['filename'].split('-')[1]
             superevent_data['far'] = gracedb_data['far']

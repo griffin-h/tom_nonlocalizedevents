@@ -1,5 +1,6 @@
-from django.conf import settings
 from django.db import models
+
+from tom_targets.models import Target
 
 
 class Superevent(models.Model):
@@ -25,7 +26,6 @@ class Superevent(models.Model):
         default=SupereventType.GRAVITATIONAL_WAVE,
     )
 
-
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
     superevent_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
     superevent_url = models.URLField()  # TODO: this should instead be constructed via superevent_id
@@ -37,9 +37,18 @@ class Superevent(models.Model):
         return self.superevent_id
 
 
+class EventCandidate(models.Model):
+    target = models.ForeignKey(Target, on_delete=models.CASCADE)
+    superevent = models.ForeignKey(Superevent, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [  # TODO: this constraint isn't working
+            models.UniqueConstraint(fields=['target', 'superevent'], name='Unique Target/Superevent')
+        ]
+
+
 class EventLocalization(models.Model):
     """Represents a region of the sky in which a superevent may have taken place.
     """
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-
