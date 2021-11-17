@@ -41,6 +41,15 @@ class EventCandidate(models.Model):
     target = models.ForeignKey(Target, on_delete=models.CASCADE)
     superevent = models.ForeignKey(Superevent, on_delete=models.CASCADE)
 
+    viable = models.BooleanField(
+        default=True,
+        # TODO: add description, etc
+    )
+    priority = models.IntegerField(
+        default=1,
+        # TODO: add description, etc
+    )
+
     class Meta:
         constraints = [  # TODO: this constraint isn't working
             models.UniqueConstraint(fields=['target', 'superevent'], name='Unique Target/Superevent')

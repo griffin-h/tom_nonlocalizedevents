@@ -20,6 +20,9 @@ class EventCandidateSerializer(serializers.ModelSerializer):
     superevent = serializers.PrimaryKeyRelatedField(queryset=Superevent.objects.all())
     target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all())
 
+    viable = serializers.BooleanField()
+    priority = serializers.IntegerField()
+
     class Meta:
         model = EventCandidate
         fields = '__all__'
