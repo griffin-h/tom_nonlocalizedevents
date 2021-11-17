@@ -1,9 +1,6 @@
-from django.views import generic
 from django.views.generic import DetailView, ListView
 
-from rest_framework import generics, permissions, response, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework import permissions, viewsets
 
 from tom_superevents.superevent_clients.gravitational_wave import GravitationalWaveClient
 

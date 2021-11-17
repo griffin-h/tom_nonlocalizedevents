@@ -58,6 +58,7 @@ class EventCandidate(models.Model):
     def __str__(self):
         return f'EventCandidate({self.id}) Superevent: {self.superevent} Target: {self.target}'
 
+
 class EventLocalization(models.Model):
     """Represents a region of the sky in which a superevent may have taken place.
     """
