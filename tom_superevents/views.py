@@ -1,8 +1,12 @@
+from django.views import generic
 from django.views.generic import DetailView, ListView
-from rest_framework import viewsets
-from rest_framework import permissions
+
+from rest_framework import generics, permissions, response, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from tom_superevents.superevent_clients.gravitational_wave import GravitationalWaveClient
+
 from .models import EventCandidate, EventLocalization, Superevent
 from .serializers import EventCandidateSerializer, EventLocalizationSerializer, SupereventSerializer
 
@@ -69,6 +73,23 @@ class EventCandidateViewSet(viewsets.ModelViewSet):
             kwargs['many'] = True
 
         return super().get_serializer(*args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Provide support for the PATCH HTTP verb to update individual model fields.
+
+        An example request might look like:
+
+            PATCH http://localhost:8000/api/eventcandidates/18/
+
+        with a Request Body of:
+
+            {
+                "viability": false
+            }
+
+        """
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
 
 
 class EventLocalizationViewSet(viewsets.ModelViewSet):
