@@ -30,6 +30,9 @@ class EventCandidateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        # TODO: this is a little unorthodox. it's convenient for now to handle the data from
+        # the ForiengKey objects, but that should be handled separately by their own serializers.
+        # (and to_representation could be left undisturbed).
         representation['target'] = TargetSerializer(Target.objects.get(pk=representation['target'])).data
         representation['superevent'] = Superevent.objects.get(pk=representation['superevent']).superevent_id
         return representation

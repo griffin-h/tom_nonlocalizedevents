@@ -1,9 +1,12 @@
 from django.urls import path
 
-from tom_common.api_router import SharedAPIRootRouter
+from tom_common.api_router import SharedAPIRootRouter  # a singleton DRF Router
 
 from . import views
 
+# this mechanism allows ViewSets to be registered with the tom_common Router
+# for any of the INSTALLED_APPS (i.e. the routes are added because the APP is
+# INSTALLED -- nothing else is required))
 router = SharedAPIRootRouter()
 router.register(r'superevents', views.SupereventViewSet)
 router.register(r'eventlocalizations', views.EventLocalizationViewSet)
