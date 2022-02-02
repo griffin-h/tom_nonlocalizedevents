@@ -2,32 +2,33 @@
 <!-- tom_superevent/index.html -->
 {% block content %}
 <!-- block content -->
-<h1>Superevent Index</h1>
+<h1>Non-Localized Event Index</h1>
 {% if object_list %}
   <table class="table">
       <thead>
       <tr>
           <th scope="col">#</th>
-          <th scope="col">Superevent ID</th>
-          <th scope="col">Superevent Type</th>
+          <th scope="col">Event ID</th>
+          <th scope="col">Event Type</th>
       </tr>
       </thead>
       <tbody>
-      {% for superevent in object_list %}
+      {% for event in object_list %}
       <tr>
           <td scope="row">
-              <a href="{% url 'superevents:detail'  superevent.id %}">{{ superevent.id }}</a>
+              <a href="{% url 'superevents:detail'  event.id %}">{{ event.id }}</a>
           </td>
           <td>
-              <a href="{{ superevent.superevent_url }}">{{ superevent.superevent_id }}</a>
+              <a href="{{ event.superevent_url }}">{{ event.superevent_id }}</a>
           </td>
-          <td>{{ superevent.superevent_type }}</td>
+          <td>{{ event.superevent_type }}</td>
       </tr>
       {% endfor %}
       </tbody>
   </table>
 {% else %}
-    <p>No Superevents have been created. Create Superevents via the admin interface or REST API.</p>
+    <p>No events have been created. Create Superevents via the admin interface or REST API.</p>
+    <p>Coming soon: event creation from the <a href="{% url 'tom_alerts:list' %}">SCiMMA Alert Broker</a>.</p>
 {% endif %}
 
 {% endblock content %}
