@@ -8,15 +8,15 @@ from . import views
 # for any of the INSTALLED_APPS (i.e. the routes are added because the APP is
 # INSTALLED -- nothing else is required))
 router = SharedAPIRootRouter()
-router.register(r'superevents', views.SupereventViewSet)
+router.register(r'nonlocalizedevents', views.NonlocalizedEventViewSet)
 router.register(r'eventlocalizations', views.EventLocalizationViewSet)
 router.register(r'eventcandidates', views.EventCandidateViewSet)
 
 # app_name provides namespace in {% url %} template tag
-# (i.e. {% url 'superevents:detail' <pk> %}
-app_name = 'superevents'
+# (i.e. {% url 'nonlocalizedevents:detail' <pk> %}
+app_name = 'nonlocalizedevents'
 
 urlpatterns = [
-    path('', views.SupereventListView.as_view(), name='index'),
-    path('<int:pk>/', views.SupereventDetailView.as_view(), name='detail'),
+    path('', views.NonlocalizedEventListView.as_view(), name='index'),
+    path('<int:pk>/', views.NonlocalizedEventDetailView.as_view(), name='detail'),
 ]
