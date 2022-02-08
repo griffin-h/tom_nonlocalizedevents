@@ -12,7 +12,7 @@ and other non-localized event electromagnetic (EM) follow up observations.
 
 1. Install the package into your TOM environment:
     ```bash
-    pip install tom_nonlocalizedevents
+    pip install tom-nonlocalizedevents
    ```
 
 2. In your project `settings.py`, add `tom_nonlocalizedevents` to your `INSTALLED_APPS` setting:
