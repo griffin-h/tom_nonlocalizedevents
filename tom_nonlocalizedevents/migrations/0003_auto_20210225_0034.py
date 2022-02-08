@@ -7,7 +7,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tom_superevents', '0002_superevent'),
+        ('tom_nonlocalizedevents', '0002_superevent'),
     ]
 
     operations = [

@@ -2,7 +2,7 @@ from django.views.generic import DetailView, ListView
 
 from rest_framework import permissions, viewsets
 
-from tom_superevents.superevent_clients.gravitational_wave import GravitationalWaveClient
+from tom_nonlocalizedevents.superevent_clients.gravitational_wave import GravitationalWaveClient
 
 from .models import EventCandidate, EventLocalization, Superevent
 from .serializers import EventCandidateSerializer, EventLocalizationSerializer, SupereventSerializer
@@ -14,7 +14,7 @@ class NonlocalizedEventListView(ListView):
     (To be updated when Superevent model is renamed to NonlocalizedEvent).
     """
     model = Superevent
-    template_name = 'tom_superevents/index.html'
+    template_name = 'tom_nonlocalizedevents/index.html'
 
 
 class NonlocalizedEventDetailView(DetailView):
@@ -26,13 +26,13 @@ class NonlocalizedEventDetailView(DetailView):
     (GW, GRB, Nutrino).
     """
     model = Superevent
-    template_name = 'tom_superevents/detail.html'
+    template_name = 'tom_nonlocalizedevents/detail.html'
 
     # TODO: consider combining these dictionaries
     template_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_superevents/superevent_detail/gravitational_wave.html',
-        Superevent.SupereventType.GAMMA_RAY_BURST: 'tom_superevents/superevent_detail/gamma_ray_burst.html',
-        Superevent.SupereventType.NEUTRINO: 'tom_superevents/superevent_detail/neutrino.html',
+        Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_nonlocalizedevents/superevent_detail/gravitational_wave.html',
+        Superevent.SupereventType.GAMMA_RAY_BURST: 'tom_nonlocalizedevents/superevent_detail/gamma_ray_burst.html',
+        Superevent.SupereventType.NEUTRINO: 'tom_nonlocalizedevents/superevent_detail/neutrino.html',
     }
 
     # A client in this context is the interface to the service providing event info.

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tom_superevents', '0003_auto_20210225_0034'),
+        ('tom_nonlocalizedevents', '0003_auto_20210225_0034'),
     ]
 
     operations = [

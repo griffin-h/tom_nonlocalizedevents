@@ -17,7 +17,7 @@ def percentage_filter(value):
         return value
 
 
-@register.inclusion_tag('tom_superevents/partials/alert_table.html', takes_context=True)
+@register.inclusion_tag('tom_nonlocalizedevents/partials/alert_table.html', takes_context=True)
 def alert_table(context):
     """
     Displays the alerts of an event.
