@@ -30,9 +30,12 @@ class NonlocalizedEventDetailView(DetailView):
 
     # TODO: consider combining these dictionaries
     template_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE: 'tom_nonlocalizedevents/superevent_detail/gravitational_wave.html',
-        Superevent.SupereventType.GAMMA_RAY_BURST: 'tom_nonlocalizedevents/superevent_detail/gamma_ray_burst.html',
-        Superevent.SupereventType.NEUTRINO: 'tom_nonlocalizedevents/superevent_detail/neutrino.html',
+        Superevent.SupereventType.GRAVITATIONAL_WAVE:
+            'tom_nonlocalizedevents/superevent_detail/gravitational_wave.html',
+        Superevent.SupereventType.GAMMA_RAY_BURST:
+            'tom_nonlocalizedevents/superevent_detail/gamma_ray_burst.html',
+        Superevent.SupereventType.NEUTRINO:
+            'tom_nonlocalizedevents/superevent_detail/neutrino.html',
     }
 
     # A client in this context is the interface to the service providing event info.
