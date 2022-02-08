@@ -1,6 +1,6 @@
 import factory
 
-from tom_superevents.models import Superevent, EventLocalization
+from tom_nonlocalizedevents.models import Superevent, EventLocalization
 
 
 class SupereventFactory(factory.django.DjangoModelFactory):

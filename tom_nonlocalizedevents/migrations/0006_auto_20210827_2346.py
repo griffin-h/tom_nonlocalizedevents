@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tom_targets', '0019_auto_20210811_0018'),
-        ('tom_superevents', '0005_auto_20210319_2241'),
+        ('tom_nonlocalizedevents', '0005_auto_20210319_2241'),
     ]
 
     operations = [
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='EventCandidate',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('superevent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tom_superevents.superevent')),
+                ('superevent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tom_nonlocalizedevents.superevent')),
                 ('target', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tom_targets.target')),
             ],
         ),

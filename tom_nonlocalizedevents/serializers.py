@@ -2,7 +2,7 @@ from rest_framework import serializers
 from tom_targets.models import Target
 from tom_targets.serializers import TargetSerializer
 
-from tom_superevents.models import EventCandidate, EventLocalization, Superevent
+from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, Superevent
 
 
 class BulkCreateEventCandidateListSerializer(serializers.ListSerializer):

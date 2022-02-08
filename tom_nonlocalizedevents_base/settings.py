@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'tom_catalogs',
     'tom_observations',
     'tom_dataproducts',
-    'tom_superevents',
+    'tom_nonlocalizedevents',
 ]
 
 SITE_ID = 1
@@ -73,7 +73,7 @@ MIDDLEWARE = [
     'tom_common.middleware.AuthStrategyMiddleware',
 ]
 
-ROOT_URLCONF = 'tom_superevents_base.urls'
+ROOT_URLCONF = 'tom_nonlocalizedevents_base.urls'
 
 TEMPLATES = [
     {
@@ -93,7 +93,7 @@ TEMPLATES = [
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-WSGI_APPLICATION = 'tom_superevents_base.wsgi.application'
+WSGI_APPLICATION = 'tom_nonlocalizedevents_base.wsgi.application'
 
 
 # Database

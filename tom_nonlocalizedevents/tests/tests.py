@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from tom_superevents.tests.factories import SupereventFactory, EventLocalizationFactory
+from tom_nonlocalizedevents.tests.factories import SupereventFactory, EventLocalizationFactory
 
 
 class SupereventAPITestCase(APITestCase):
