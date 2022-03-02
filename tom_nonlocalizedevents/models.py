@@ -33,6 +33,25 @@ class Superevent(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
+    @property
+    def gracedb_url(self):
+        """Construct and return the GraceDB URL for this superevent from the superevent_id Field.
+
+        for example, https://gracedb.ligo.org/superevents/S200316bj/
+        """
+        # TODO: add check that superevent_type is GRAVITATIONAL_WAVE
+        return f"https://gracedb.ligo.org/superevents/{self.superevent_id}/"
+
+    @property
+    def treasuremap_url(self):
+        """Construct and return the Treasure Map (treasuremap.space) URL for this superevent
+        from the superevent_id Field.
+
+        for example: http://treasuremap.space/alerts?graceids=S200219ac
+        """
+        # TODO: add check that superevent_type is GRAVITATIONAL_WAVE
+        return f"http://treasuremap.space/alerts?graceids={self.superevent_id}"
+
     def __str__(self):
         return self.superevent_id
 
