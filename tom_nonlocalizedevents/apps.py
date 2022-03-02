@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class TomSupereventsConfig(AppConfig):
+class TomNonlocalizedEventsConfig(AppConfig):
     name = 'tom_nonlocalizedevents'
