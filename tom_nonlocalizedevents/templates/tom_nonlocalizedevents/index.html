@@ -7,8 +7,9 @@
   <table class="table">
       <thead>
       <tr>
-          <th scope="col">#</th>
-          <th scope="col">Event ID</th>
+          <th scope="col">Detail Page</th>
+          <th scope="col">GraceDB</th>
+          <th scope="col">Treasure Map</th>
           <th scope="col">Event Type</th>
       </tr>
       </thead>
@@ -16,12 +17,15 @@
       {% for event in object_list %}
       <tr>
           <td scope="row">
-              <a href="{% url 'nonlocalizedevents:detail'  event.id %}">{{ event.id }}</a>
+              {{event.id}}. <a href="{% url 'nonlocalizedevents:detail'  event.id %}">Event Details</a>
           </td>
           <td>
-              <a href="{{ event.superevent_url }}">{{ event.superevent_id }}</a>
-          </td>
-          <td>{{ event.superevent_type }}</td>
+            <a href="{{ event.gracedb_url }}">{{ event.superevent_id }}</a>
+        </td>
+        <td>
+            <a href="{{ event.treasuremap_url }}">{{ event.superevent_id }}</a>
+        </td>
+      <td>{{ event.superevent_type }}</td>
       </tr>
       {% endfor %}
       </tbody>
