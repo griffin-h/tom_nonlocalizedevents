@@ -13,9 +13,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
-        pip install markupsafe==2.0.1
-        pip install -r requirements.txt -vvv
+        pip install -r requirements.txt -vvv 'markupsafe==2.0.1'
         pip install -I flake8
+        pip freeze
     - name: Style Checks
       run: flake8 tom_* --exclude=*/migrations/* --max-line-length=120
 
