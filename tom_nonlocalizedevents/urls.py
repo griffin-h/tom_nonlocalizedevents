@@ -19,4 +19,5 @@ app_name = 'nonlocalizedevents'
 urlpatterns = [
     path('', views.NonlocalizedEventListView.as_view(), name='index'),
     path('<int:pk>/', views.NonlocalizedEventDetailView.as_view(), name='detail'),
+    path('alert/createfrom', views.CreateEventFromSCiMMAAlertView.as_view(), name='create-from-alert')
 ]

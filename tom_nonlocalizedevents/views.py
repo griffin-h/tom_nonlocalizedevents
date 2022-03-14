@@ -1,6 +1,13 @@
+from django.contrib import messages
+from django.http.response import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.views.generic import DetailView, ListView
+from django.views.generic.base import View
+from django.urls import reverse
 
 from rest_framework import permissions, viewsets
+
+from tom_alerts.alerts import get_service_class
 
 from tom_nonlocalizedevents.superevent_clients.gravitational_wave import GravitationalWaveClient
 
@@ -61,6 +68,45 @@ class NonlocalizedEventDetailView(DetailView):
             context['superevent_data'] = superevent_client.get_superevent_data(obj.superevent_id)
             context.update(superevent_client.get_additional_context_data(obj.superevent_id))
         return context
+
+
+# from the tom_alerts query_result.html
+
+class CreateEventFromSCiMMAAlertView(View):
+    """
+    Creates the models.Superevent instance and redirect to NonlocalizedEventDetailView
+    """
+    pass
+
+    def post(self, request, *args, **kwargs):
+        """
+        """
+        print('*** CreateFromAlertView.post ***')
+        # print(f'*** CreateFromAlertView.post request: {dir(request) }')
+        print(f'*** CreateFromAlertView.post args: {args}')
+        print(f'*** CreateFromAlertView.post kwargs: {kwargs}')
+
+        # the request.POST is a QueryDict object;
+        # for SCiMMA, alerts: list items are PKs to skip.dev.hop.scimma.org/api/alerts/PK/
+        query_id = self.request.POST['query_id']
+        broker_name = self.request.POST['broker']
+        broker_class = get_service_class(broker_name)
+        alerts = [int(id) for id in request.POST.getlist('alerts', [])]
+
+        print(f'*** CreateFromAlertView.post query_id: {query_id}')
+        print(f'*** CreateFromAlertView.post broker_name: {broker_name}')
+        print(f'*** CreateFromAlertView.post broker_class: {broker_class}')
+        print(f'*** CreateFromAlertView.post alert_ids: {alerts}')
+
+        errors = []
+        if not alerts:
+            messages.warning(request, 'Please select at least one alert from which to create an event.')
+            reverse_url = reverse('tom_alerts:run', kwargs={'pk': query_id})
+            print(f'*** CreateFromAlertView.post reverse_url: {reverse_url}: {type(reverse_url)}')
+            return redirect(reverse_url)
+
+
+        return HttpResponseRedirect(redirect_to='/nonlocalizedevents')  # preceeding slash; relative path otherwise
 
 
 # Django Rest Framework Views
