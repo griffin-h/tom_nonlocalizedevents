@@ -1,4 +1,7 @@
+import json
+
 from django.contrib import messages
+from django.core.cache import cache
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.views.generic import DetailView, ListView
@@ -89,8 +92,8 @@ class CreateEventFromSCiMMAAlertView(View):
         # the request.POST is a QueryDict object;
         # for SCiMMA, alerts: list items are PKs to skip.dev.hop.scimma.org/api/alerts/PK/
         query_id = self.request.POST['query_id']
-        broker_name = self.request.POST['broker']
-        broker_class = get_service_class(broker_name)
+        broker_name = self.request.POST['broker']  # should be "SCIMMA"
+        broker_class = get_service_class(broker_name)  # should be <class 'tom_scimma.scimma.SCIMMABroker'>
         alerts = [int(id) for id in request.POST.getlist('alerts', [])]
 
         print(f'*** CreateFromAlertView.post query_id: {query_id}')
@@ -99,14 +102,50 @@ class CreateEventFromSCiMMAAlertView(View):
         print(f'*** CreateFromAlertView.post alert_ids: {alerts}')
 
         errors = []
+        # if the user didn't select an alert; warn and re-direct back
         if not alerts:
             messages.warning(request, 'Please select at least one alert from which to create an event.')
-            reverse_url = reverse('tom_alerts:run', kwargs={'pk': query_id})
-            print(f'*** CreateFromAlertView.post reverse_url: {reverse_url}: {type(reverse_url)}')
+            reverse_url: str = reverse('tom_alerts:run', kwargs={'pk': query_id})
             return redirect(reverse_url)
 
+        # try to extract EventID from Alert and use it to create a Superevent
+        for alert_id in alerts:
+            cached_alert = json.loads(cache.get(f'alert_{alert_id}'))  # cached by tom_alerts.views.py::RunQueryView
+            # early return: alert not in cache
+            if not cached_alert:
+                messages.error(request, 'Could not create event(s). Try re-running the query to refresh the cache.')
+                return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
+            print(f'*** CreateFromAlertView.post cached_alert: {cached_alert}: {type(cached_alert)}')
 
-        return HttpResponseRedirect(redirect_to='/nonlocalizedevents')  # preceeding slash; relative path otherwise
+            # early return: alert not LVC/LVC COUNTERPART NOTICE
+            if cached_alert.get('topic', '') != 'lvc.lvc-counterpart':
+                messages.error(request, f'Only Alerts from the lvc.lvc-counterpart topic have '
+                f'parsed event_trig_num required for Event origination. Please select an appropriate alert.')
+                return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
+
+            # early return: event_trig_num not found in parsed alert message
+            event_trig_num = cached_alert['message'].get('event_trig_num', None)
+            if event_trig_num is None:
+                messages.error(request, f'Could not create event for alert: {alert_id}.'
+                f'event_trig_num not found in alert message.')
+                return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
+
+            superevent, created = Superevent.objects.get_or_create(superevent_id=event_trig_num)
+            if not created:
+                # the superevent already existed
+                messages.warning(request, f'Event {event_trig_num} already exists.')
+                errors.append(superevent.superevent_id)
+
+        if len(alerts) == len(errors):
+            # zero superevents created
+            return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
+        elif len(alerts) == 1:
+            # one superevent created
+            return redirect(reverse('nonlocalizedevents:detail', kwargs={'pk': superevent.id}))
+        else:
+            # multipe superevents created
+            return redirect(reverse('nonlocalizedevents:index'))
+        # return HttpResponseRedirect(redirect_to='/nonlocalizedevents')  # preceeding slash; relative path otherwise
 
 
 # Django Rest Framework Views
