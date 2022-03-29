@@ -87,7 +87,7 @@ class CreateEventFromSCiMMAAlertView(View):
         # for SCiMMA, alerts: list items are PKs to skip.dev.hop.scimma.org/api/alerts/PK/
         query_id = self.request.POST['query_id']
         broker_name = self.request.POST['broker']  # should be "SCIMMA"
-        broker_class = get_service_class(broker_name)  # should be <class 'tom_scimma.scimma.SCIMMABroker'>
+        # broker_class = get_service_class(broker_name)  # should be <class 'tom_scimma.scimma.SCIMMABroker'>
         alerts = [int(id) for id in request.POST.getlist('alerts', [])]
 
         errors = []
