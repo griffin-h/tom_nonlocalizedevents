@@ -83,22 +83,12 @@ class CreateEventFromSCiMMAAlertView(View):
     def post(self, request, *args, **kwargs):
         """
         """
-        print('*** CreateFromAlertView.post ***')
-        # print(f'*** CreateFromAlertView.post request: {dir(request) }')
-        print(f'*** CreateFromAlertView.post args: {args}')
-        print(f'*** CreateFromAlertView.post kwargs: {kwargs}')
-
         # the request.POST is a QueryDict object;
         # for SCiMMA, alerts: list items are PKs to skip.dev.hop.scimma.org/api/alerts/PK/
         query_id = self.request.POST['query_id']
         broker_name = self.request.POST['broker']  # should be "SCIMMA"
         broker_class = get_service_class(broker_name)  # should be <class 'tom_scimma.scimma.SCIMMABroker'>
         alerts = [int(id) for id in request.POST.getlist('alerts', [])]
-
-        print(f'*** CreateFromAlertView.post query_id: {query_id}')
-        print(f'*** CreateFromAlertView.post broker_name: {broker_name}')
-        print(f'*** CreateFromAlertView.post broker_class: {broker_class}')
-        print(f'*** CreateFromAlertView.post alert_ids: {alerts}')
 
         errors = []
         # if the user didn't select an alert; warn and re-direct back
@@ -114,7 +104,6 @@ class CreateEventFromSCiMMAAlertView(View):
             if not cached_alert:
                 messages.error(request, 'Could not create event(s). Try re-running the query to refresh the cache.')
                 return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
-            print(f'*** CreateFromAlertView.post cached_alert: {cached_alert}: {type(cached_alert)}')
 
             # early return: alert not LVC/LVC COUNTERPART NOTICE
             if cached_alert.get('topic', '') != 'lvc.lvc-counterpart':
