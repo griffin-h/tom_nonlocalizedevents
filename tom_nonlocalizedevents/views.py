@@ -2,7 +2,6 @@ import json
 
 from django.contrib import messages
 from django.core.cache import cache
-from django.http.response import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.views.generic import DetailView, ListView
 from django.views.generic.base import View
@@ -119,15 +118,18 @@ class CreateEventFromSCiMMAAlertView(View):
 
             # early return: alert not LVC/LVC COUNTERPART NOTICE
             if cached_alert.get('topic', '') != 'lvc.lvc-counterpart':
-                messages.error(request, f'Only Alerts from the lvc.lvc-counterpart topic have '
-                f'parsed event_trig_num required for Event origination. Please select an appropriate alert.')
+                messages.error(request,
+                               ('Only Alerts from the lvc.lvc-counterpart topic have '
+                                'parsed event_trig_num required for Event origination. '
+                                'Please select an appropriate alert.'))
                 return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
 
             # early return: event_trig_num not found in parsed alert message
             event_trig_num = cached_alert['message'].get('event_trig_num', None)
             if event_trig_num is None:
-                messages.error(request, f'Could not create event for alert: {alert_id}.'
-                f'event_trig_num not found in alert message.')
+                messages.error(request,
+                               (f'Could not create event for alert: {alert_id}. '
+                                'event_trig_num not found in alert message.'))
                 return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
 
             superevent, created = Superevent.objects.get_or_create(superevent_id=event_trig_num)
@@ -145,8 +147,6 @@ class CreateEventFromSCiMMAAlertView(View):
         else:
             # multipe superevents created
             return redirect(reverse('nonlocalizedevents:index'))
-        # return HttpResponseRedirect(redirect_to='/nonlocalizedevents')  # preceeding slash; relative path otherwise
-
 
 # Django Rest Framework Views
 
