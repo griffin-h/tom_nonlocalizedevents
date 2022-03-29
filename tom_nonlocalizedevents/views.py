@@ -9,7 +9,7 @@ from django.urls import reverse
 
 from rest_framework import permissions, viewsets
 
-from tom_alerts.alerts import get_service_class
+# from tom_alerts.alerts import get_service_class
 
 from tom_nonlocalizedevents.superevent_clients.gravitational_wave import GravitationalWaveClient
 
@@ -86,7 +86,7 @@ class CreateEventFromSCiMMAAlertView(View):
         # the request.POST is a QueryDict object;
         # for SCiMMA, alerts: list items are PKs to skip.dev.hop.scimma.org/api/alerts/PK/
         query_id = self.request.POST['query_id']
-        broker_name = self.request.POST['broker']  # should be "SCIMMA"
+        # broker_name = self.request.POST['broker']  # should be "SCIMMA"
         # broker_class = get_service_class(broker_name)  # should be <class 'tom_scimma.scimma.SCIMMABroker'>
         alerts = [int(id) for id in request.POST.getlist('alerts', [])]
 
