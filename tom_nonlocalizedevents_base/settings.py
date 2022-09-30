@@ -161,6 +161,20 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
 MEDIA_URL = '/data/'
 
+# Vue and django-webpack-loader/webpack-bundle-tracker configuration
+VUE_FRONTEND_DIR_TOM_NONLOCAL = os.path.join(STATIC_ROOT, 'tom_nonlocalizedevents/vue')
+VUE_FRONTEND_DIR = os.path.join(STATIC_ROOT, 'vue')
+WEBPACK_LOADER = {
+    'TOM_NONLOCALIZEDEVENTS': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': 'tom_nonlocalizedevents/vue/',  # must end with slash
+        'STATS_FILE': os.path.join(VUE_FRONTEND_DIR_TOM_NONLOCAL, 'webpack-stats.json'),
+        'POLL_INTERVAL': 0.1,
+        'TIMEOUT': None,
+        'IGNORE': [r'.+\.hot-update.js', r'.+\.map']
+    }
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
