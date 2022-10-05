@@ -200,6 +200,5 @@ class SupereventView(TemplateView):
     def get_context_data(self, **kwargs: dict) -> dict:
         context = super().get_context_data(**kwargs)
         superevent = Superevent.objects.get(pk=kwargs['pk'])
-        print(superevent)
         context['superevent_identifier'] = superevent.superevent_id
         return context
