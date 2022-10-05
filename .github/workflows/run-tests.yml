@@ -33,6 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           poetry install
+          poetry run python manage.py collectstatic --noinput
       - name: Run Tests
         run: poetry run python manage.py test --exclude-tag=canary
 
@@ -48,6 +49,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry coverage coveralls
           poetry install
+          poetry run python manage.py collectstatic --noinput
       - name: Run Tests
         run: poetry run coverage run --include=tom_* manage.py test --exclude-tag=canary
       - name: Report Coverage
