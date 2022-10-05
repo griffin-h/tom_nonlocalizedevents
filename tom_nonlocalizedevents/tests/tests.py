@@ -33,6 +33,7 @@ class TestSupereventViewSet(SupereventAPITestCase):
 
     def test_superevent_index_view(self):
         response = self.client.get(reverse('nonlocalizedevents:index'))
+
         self.assertContains(response, self.superevent1.superevent_id)
         self.assertContains(response, self.superevent2.superevent_id)
         self.assertContains(response, reverse('nonlocalizedevents:detail', args=(self.superevent1.pk,)))
@@ -40,9 +41,11 @@ class TestSupereventViewSet(SupereventAPITestCase):
 
     def test_superevent_detail_view(self):
         response = self.client.get(reverse('nonlocalizedevents:detail', args=(self.superevent1.pk,)))
+
         self.assertContains(response, self.superevent1.superevent_id)
         self.assertContains(response, "superevent-detail")
         self.assertContains(response, "vue")
+
 
 class TestEventLocalizationViewSet(SupereventAPITestCase):
     def test_eventlocalization_list(self):
