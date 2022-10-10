@@ -3,7 +3,7 @@ import json
 from django.contrib import messages
 from django.core.cache import cache
 from django.shortcuts import redirect
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.base import View
 from django.urls import reverse
 
@@ -192,3 +192,13 @@ class EventLocalizationViewSet(viewsets.ModelViewSet):
     queryset = EventLocalization.objects.all()
     serializer_class = EventLocalizationSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class SupereventView(TemplateView):
+    template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
+
+    def get_context_data(self, **kwargs: dict) -> dict:
+        context = super().get_context_data(**kwargs)
+        superevent = Superevent.objects.get(pk=kwargs['pk'])
+        context['superevent_identifier'] = superevent.superevent_id
+        return context

@@ -23,6 +23,24 @@ and other non-localized event electromagnetic (EM) follow up observations.
         'tom_nonlocalizedevents',
     ]
     ```
+    
+    Also include the following Django-Webpack-Loader settings in your settings.py:
+
+    ```python
+    VUE_FRONTEND_DIR_TOM_NONLOCAL = os.path.join(STATIC_ROOT, 'tom_nonlocalizedevents/vue')
+    WEBPACK_LOADER = {
+        'TOM_NONLOCALIZEDEVENTS': {
+            'CACHE': not DEBUG,
+            'BUNDLE_DIR_NAME': 'tom_nonlocalizedevents/vue/',  # must end with slash
+            'STATS_FILE': os.path.join(VUE_FRONTEND_DIR_TOM_NONLOCAL, 'webpack-stats.json'),
+            'POLL_INTERVAL': 0.1,
+            'TIMEOUT': None,
+            'IGNORE': [r'.+\.hot-update.js', r'.+\.map']
+        }
+    }
+    ```
+
+    If `WEBPACK_LOADER` is already defined in your settings, then integrate these values in to it.
 
 3. Include the tom_nonlocalizedevent URLconf in your project `urls.py`:
    ```python
@@ -37,9 +55,13 @@ and other non-localized event electromagnetic (EM) follow up observations.
 5. Run ``python manage.py migrate`` to create the tom_nonlocalizedevents models.
 
 
+## Development
+
+When any changes are made to this library, the vue files will need to be build and bundled and committed into the repo so that they can be bundled and deployed with the django package. This means that after making any vue changes, you must run `npm run build` within the `tom_nonlocalizedevents_vue` directory once, which will install the built files into `tom_nonlocalizedevents/static/`, and then those built files will need to be committed into the repo. This allows django projects using this library to get those files when running `python manage.py collectstatic`.
+
 ## Running the tests
 
 In order to run the tests, run the following in your virtualenv:
 
-`python tom_superevents/tests/run_tests.py`
+`python manage.py test`
 
