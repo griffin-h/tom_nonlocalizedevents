@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tom-nonlocalizedevents"
-version = "0.5.1"
+version = "0.5.2"
 description = "Reusable TOMToolkit app to support gravitational wave superevent and other nonlocalized event EM follow-up observations."
 authors = ["TOM Toolkit Project <tomtoolkit@lco.global>", "David Collom <dcollom@lco.global>", "Lindy Lindstrom <llindstrom@lco.global>", "Jonathan Nation <jnation@lco.global>"]
 license = "GPL-3.0-only"
