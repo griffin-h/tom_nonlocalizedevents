@@ -36,10 +36,10 @@ def handle_message(topic, message):
     fields = extract_fields(message.decode('utf-8'))
     if fields:
         _, created = NonLocalizedEvent.objects.update_or_create(
-            event_id = fields['TRIGGER_NUM'],
-            sequence_id = fields['SEQUENCE_NUM'],
-            event_type = NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE,
-            defaults = {
+            event_id=fields['TRIGGER_NUM'],
+            sequence_id=fields['SEQUENCE_NUM'],
+            event_type=NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE,
+            defaults={
                 'skymap_fits_url': fields['SKYMAP_FITS_URL'],
                 'event_subtype': fields['NOTICE_TYPE']
             }
@@ -47,4 +47,6 @@ def handle_message(topic, message):
         if created:
             logger.info("Ingested a GW event from alertstream")
         else:
-            logger.warning(f"GW event with id {fields['TRIGGER_NUM']} and sequence id {fields['SEQUENCE_NUM']} already exists in the system")
+            logger.warning(
+                f"GW event with id {fields['TRIGGER_NUM']} and sequence id {fields['SEQUENCE_NUM']} "
+                "already exists in the system")

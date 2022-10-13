@@ -54,6 +54,7 @@ and other non-localized event electromagnetic (EM) follow up observations.
 
 5. Run ``python manage.py migrate`` to create the tom_nonlocalizedevents models.
 
+6. Add a `urls.json` that will end up in the root of your static files in the project using this module - usually this is `./static/` within your project directory. It must include a key for `tomApiBaseUrl` to the deployed url of your TOM, for csrf requests from the frontend to work properly. It defaults to localhost deployments and must be configured for production deployments.
 
 ## Development
 

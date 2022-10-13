@@ -29,7 +29,8 @@ class NonLocalizedEvent(models.Model):
     event_subtype = models.CharField(
         max_length=256,
         default='',
-        help_text='The subtype of the event. Options are type specific, i.e. GW events have initial, preliminary, update types.'
+        help_text='The subtype of the event. Options are type specific, i.e. GW events have initial, '
+                  'preliminary, update types.'
     )
 
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.

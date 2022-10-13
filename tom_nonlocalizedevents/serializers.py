@@ -31,7 +31,8 @@ class EventCandidateSerializer(serializers.ModelSerializer):
         # the ForiengKey objects, but that should be handled separately by their own serializers.
         # (and to_representation could be left undisturbed).
         representation['target'] = TargetSerializer(Target.objects.get(pk=representation['target'])).data
-        representation['nonlocalizedevent'] = NonLocalizedEvent.objects.get(pk=representation['nonlocalizedevent']).event_id
+        representation['nonlocalizedevent'] = NonLocalizedEvent.objects.get(
+            pk=representation['nonlocalizedevent']).event_id
         return representation
 
 
@@ -45,8 +46,9 @@ class NonLocalizedEventSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_event_candidates(self, instance):
         alerts = instance.eventcandidate_set.all()
-        # This returns the nonlocalied event identifier, which means it's duplicated in the response. The NonLocalizedEventSerializer
-        # should therefore use its own custom EventCandidateSerializer rather than the one defined above
+        # This returns the nonlocalied event identifier, which means it's duplicated in the response.
+        # The NonLocalizedEventSerializer should therefore use its own custom EventCandidateSerializer
+        # rather than the one defined above.
         return EventCandidateSerializer(alerts, many=True).data
 
 
