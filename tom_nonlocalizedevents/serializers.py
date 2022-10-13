@@ -20,9 +20,6 @@ class EventCandidateSerializer(serializers.ModelSerializer):
     nonlocalizedevent = serializers.PrimaryKeyRelatedField(queryset=NonLocalizedEvent.objects.all())
     target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all())
 
-    viable = serializers.BooleanField(default=True)
-    priority = serializers.IntegerField(default=1)
-
     class Meta:
         model = EventCandidate
         fields = '__all__'
