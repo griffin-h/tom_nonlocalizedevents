@@ -28,7 +28,9 @@ class NonLocalizedEvent(models.Model):
 
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
     event_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
-    sequence_id = models.PositiveIntegerField()
+    sequence_id = models.PositiveIntegerField(
+        default=1
+    )
     skymap_file_url = models.URLField()
 
     created = models.DateTimeField(auto_now_add=True)
@@ -59,7 +61,7 @@ class NonLocalizedEvent(models.Model):
 
 class EventCandidate(models.Model):
     target = models.ForeignKey(Target, on_delete=models.CASCADE)
-    superevent = models.ForeignKey(NonLocalizedEvent, on_delete=models.CASCADE)
+    nonlocalizedevent = models.ForeignKey(NonLocalizedEvent, on_delete=models.CASCADE)
 
     viable = models.BooleanField(
         default=True,
@@ -72,15 +74,15 @@ class EventCandidate(models.Model):
 
     class Meta:
         constraints = [  # TODO: this constraint isn't working
-            models.UniqueConstraint(fields=['target', 'superevent'], name='Unique Target/Superevent')
+            models.UniqueConstraint(fields=['target', 'nonlocalizedevent'], name='Unique Target/NonLocalizedEvent')
         ]
 
     def __str__(self):
-        return f'EventCandidate({self.id}) Superevent: {self.superevent} Target: {self.target}'
+        return f'EventCandidate({self.id}) NonLocalizedEvent: {self.nonlocalizedevent} Target: {self.target}'
 
 
 class EventLocalization(models.Model):
-    """Represents a region of the sky in which a superevent may have taken place.
+    """Represents a region of the sky in which a nonlocalizedevent may have taken place.
     """
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
