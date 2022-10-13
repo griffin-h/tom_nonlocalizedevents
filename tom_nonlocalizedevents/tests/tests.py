@@ -23,7 +23,7 @@ class TestNonLocalizedEventViewSet(NonLocalizedEventAPITestCase):
 
     def test_nonlocalizedevent_list_api(self):
         """Test NonLocalizedEvent API list endpoint."""
-        response = self.client.get(reverse('api:superevent-list'))
+        response = self.client.get(reverse('api:nonlocalizedevent-list'))
 
         self.assertEqual(response.json()['count'], 2)
         self.assertContains(response, f'"event_id":"{self.superevent1.event_id}"')

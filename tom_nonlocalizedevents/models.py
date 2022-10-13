@@ -26,6 +26,11 @@ class NonLocalizedEvent(models.Model):
         default=NonLocalizedEventType.GRAVITATIONAL_WAVE,
         help_text='The type of NonLocalizedEvent, used for determining how to ingest and display it'
     )
+    event_subtype = models.CharField(
+        max_length=256,
+        default='',
+        help_text='The subtype of the event. Options are type specific, i.e. GW events have initial, preliminary, update types.'
+    )
 
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
     event_id = models.CharField(

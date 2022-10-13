@@ -17,13 +17,13 @@
       {% for event in object_list %}
       <tr>
           <td scope="row">
-              {{event.id}}. <a href="{% url 'nonlocalizedevents:detail'  event.id %}"><b>{{ event.superevent_id }}</b> Details</a>
+              {{event.id}}. <a href="{% url 'nonlocalizedevents:detail'  event.id %}"><b>{{ event.event_id }}</b> Details</a>
           </td>
           <td>
-            <a href="{{ event.gracedb_url }}">{{ event.superevent_id }}</a>
+            <a href="{{ event.gracedb_url }}">{{ event.event_id }}</a>
         </td>
         <td>
-            <a href="{{ event.treasuremap_url }}">{{ event.superevent_id }}</a>
+            <a href="{{ event.treasuremap_url }}">{{ event.event_id }}</a>
         </td>
       <td>{{ event.superevent_type }}</td>
       </tr>
