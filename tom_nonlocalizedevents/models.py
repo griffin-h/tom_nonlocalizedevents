@@ -3,7 +3,7 @@ from django.db import models
 from tom_targets.models import Target
 
 
-class Superevent(models.Model):
+class NonLocalizedEvent(models.Model):
     """Represents a Superevent being followed-up upon by this TOM.
 
     A Superevent is distinguished from a Target in that it is localized to a region of the sky
@@ -58,7 +58,7 @@ class Superevent(models.Model):
 
 class EventCandidate(models.Model):
     target = models.ForeignKey(Target, on_delete=models.CASCADE)
-    superevent = models.ForeignKey(Superevent, on_delete=models.CASCADE)
+    superevent = models.ForeignKey(NonLocalizedEvent, on_delete=models.CASCADE)
 
     viable = models.BooleanField(
         default=True,

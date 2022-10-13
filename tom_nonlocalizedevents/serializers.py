@@ -2,7 +2,7 @@ from rest_framework import serializers
 from tom_targets.models import Target
 from tom_targets.serializers import TargetSerializer
 
-from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, Superevent
+from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
 
 
 class BulkCreateEventCandidateListSerializer(serializers.ListSerializer):
@@ -17,7 +17,7 @@ class EventCandidateSerializer(serializers.ModelSerializer):
     ``EventCandidate`` with just a primary key, and ``to_representation`` is then overridden for proper display values.
     See: https://www.django-rest-framework.org/api-guide/relations/#custom-relational-fields
     """
-    superevent = serializers.PrimaryKeyRelatedField(queryset=Superevent.objects.all())
+    superevent = serializers.PrimaryKeyRelatedField(queryset=NonLocalizedEvent.objects.all())
     target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all())
 
     viable = serializers.BooleanField(default=True)
@@ -34,7 +34,7 @@ class EventCandidateSerializer(serializers.ModelSerializer):
         # the ForiengKey objects, but that should be handled separately by their own serializers.
         # (and to_representation could be left undisturbed).
         representation['target'] = TargetSerializer(Target.objects.get(pk=representation['target'])).data
-        representation['superevent'] = Superevent.objects.get(pk=representation['superevent']).superevent_id
+        representation['superevent'] = NonLocalizedEvent.objects.get(pk=representation['superevent']).superevent_id
         return representation
 
 
@@ -42,7 +42,7 @@ class SupereventSerializer(serializers.HyperlinkedModelSerializer):
     event_candidates = serializers.SerializerMethodField()
 
     class Meta:
-        model = Superevent
+        model = NonLocalizedEvent
         fields = ['superevent_id', 'superevent_url',
                   'id', 'event_candidates', 'created', 'modified']
 

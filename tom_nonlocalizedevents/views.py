@@ -13,7 +13,7 @@ from rest_framework import permissions, viewsets
 
 from tom_nonlocalizedevents.superevent_clients.gravitational_wave import GravitationalWaveClient
 
-from .models import EventCandidate, EventLocalization, Superevent
+from .models import EventCandidate, EventLocalization, NonLocalizedEvent
 from .serializers import EventCandidateSerializer, EventLocalizationSerializer, SupereventSerializer
 
 
@@ -22,7 +22,7 @@ class NonlocalizedEventListView(ListView):
     Unadorned Django ListView subclass for Superevent model.
     (To be updated when Superevent model is renamed to NonlocalizedEvent).
     """
-    model = Superevent
+    model = NonLocalizedEvent
     template_name = 'tom_nonlocalizedevents/index.html'
 
 
@@ -34,26 +34,26 @@ class NonlocalizedEventDetailView(DetailView):
     Has mechanism to supply templates specific to the type of NonlocalizedEvent
     (GW, GRB, Nutrino).
     """
-    model = Superevent
+    model = NonLocalizedEvent
     template_name = 'tom_nonlocalizedevents/detail.html'
 
     # TODO: consider combining these dictionaries
     template_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE:
+        NonLocalizedEvent.SupereventType.GRAVITATIONAL_WAVE:
             'tom_nonlocalizedevents/superevent_detail/gravitational_wave.html',
-        Superevent.SupereventType.GAMMA_RAY_BURST:
+        NonLocalizedEvent.SupereventType.GAMMA_RAY_BURST:
             'tom_nonlocalizedevents/superevent_detail/gamma_ray_burst.html',
-        Superevent.SupereventType.NEUTRINO:
+        NonLocalizedEvent.SupereventType.NEUTRINO:
             'tom_nonlocalizedevents/superevent_detail/neutrino.html',
     }
 
     # A client in this context is the interface to the service providing event info.
     # (i.e GraceDB for gravitational wave events)
     client_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE: GravitationalWaveClient(),
-        Superevent.SupereventType.GAMMA_RAY_BURST: None,
-        Superevent.SupereventType.NEUTRINO: None,
-        Superevent.SupereventType.UNKNOWN: None,
+        NonLocalizedEvent.SupereventType.GRAVITATIONAL_WAVE: GravitationalWaveClient(),
+        NonLocalizedEvent.SupereventType.GAMMA_RAY_BURST: None,
+        NonLocalizedEvent.SupereventType.NEUTRINO: None,
+        NonLocalizedEvent.SupereventType.UNKNOWN: None,
     }
 
     def get_template_names(self):
@@ -121,7 +121,7 @@ class CreateEventFromSCiMMAAlertView(View):
                                 'event_trig_num not found in alert message.'))
                 return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
 
-            superevent, created = Superevent.objects.get_or_create(superevent_id=event_trig_num)
+            superevent, created = NonLocalizedEvent.objects.get_or_create(superevent_id=event_trig_num)
             if not created:
                 # the superevent already existed
                 messages.warning(request, f'Event {event_trig_num} already exists.')
@@ -144,7 +144,7 @@ class NonlocalizedEventViewSet(viewsets.ModelViewSet):
     """
     DRF API endpoint that allows Superevents to be viewed or edited.
     """
-    queryset = Superevent.objects.all()
+    queryset = NonLocalizedEvent.objects.all()
     serializer_class = SupereventSerializer
     permission_classes = []
 
@@ -199,6 +199,6 @@ class SupereventView(TemplateView):
 
     def get_context_data(self, **kwargs: dict) -> dict:
         context = super().get_context_data(**kwargs)
-        superevent = Superevent.objects.get(pk=kwargs['pk'])
+        superevent = NonLocalizedEvent.objects.get(pk=kwargs['pk'])
         context['superevent_identifier'] = superevent.superevent_id
         return context
