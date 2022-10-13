@@ -14,21 +14,22 @@ class NonLocalizedEvent(models.Model):
     with gamma-ray burst and neutrino events.
     """
 
-    class SupereventType(models.TextChoices):
+    class NonLocalizedEventType(models.TextChoices):
         GRAVITATIONAL_WAVE = 'GW', 'Gravitational Wave'
         GAMMA_RAY_BURST = 'GRB', 'Gamma-ray Burst'
         NEUTRINO = 'NU', 'Neutrino'
         UNKNOWN = 'UNK', 'Unknown'
 
-    superevent_type = models.CharField(
+    event_type = models.CharField(
         max_length=3,
-        choices=SupereventType.choices,
-        default=SupereventType.GRAVITATIONAL_WAVE,
+        choices=NonLocalizedEventType.choices,
+        default=NonLocalizedEventType.GRAVITATIONAL_WAVE,
     )
 
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
-    superevent_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
-    superevent_url = models.URLField()  # TODO: this should instead be constructed via superevent_id
+    event_id = models.CharField(max_length=64)  # GraceDB superevent_id reference
+    sequence_id = models.PositiveIntegerField()
+    skymap_file_url = models.URLField()
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

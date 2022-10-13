@@ -17,7 +17,7 @@ class EventCandidateSerializer(serializers.ModelSerializer):
     ``EventCandidate`` with just a primary key, and ``to_representation`` is then overridden for proper display values.
     See: https://www.django-rest-framework.org/api-guide/relations/#custom-relational-fields
     """
-    superevent = serializers.PrimaryKeyRelatedField(queryset=NonLocalizedEvent.objects.all())
+    nonlocalizedevent = serializers.PrimaryKeyRelatedField(queryset=NonLocalizedEvent.objects.all())
     target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all())
 
     viable = serializers.BooleanField(default=True)
@@ -34,21 +34,21 @@ class EventCandidateSerializer(serializers.ModelSerializer):
         # the ForiengKey objects, but that should be handled separately by their own serializers.
         # (and to_representation could be left undisturbed).
         representation['target'] = TargetSerializer(Target.objects.get(pk=representation['target'])).data
-        representation['superevent'] = NonLocalizedEvent.objects.get(pk=representation['superevent']).superevent_id
+        representation['nonlocalizedevent'] = NonLocalizedEvent.objects.get(pk=representation['nonlocalizedevent']).event_id
         return representation
 
 
-class SupereventSerializer(serializers.HyperlinkedModelSerializer):
+class NonLocalizedEventSerializer(serializers.HyperlinkedModelSerializer):
     event_candidates = serializers.SerializerMethodField()
 
     class Meta:
         model = NonLocalizedEvent
-        fields = ['superevent_id', 'superevent_url',
+        fields = ['event_id', 'sequence_id', 'skymap_file_url',
                   'id', 'event_candidates', 'created', 'modified']
 
     def get_event_candidates(self, instance):
         alerts = instance.eventcandidate_set.all()
-        # This returns the superevent identifier, which means it's duplicated in the response. The SupereventSerializer
+        # This returns the nonlocalied event identifier, which means it's duplicated in the response. The NonLocalizedEventSerializer
         # should therefore use its own custom EventCandidateSerializer rather than the one defined above
         return EventCandidateSerializer(alerts, many=True).data
 

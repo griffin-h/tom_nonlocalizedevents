@@ -1,14 +1,14 @@
 import factory
 
-from tom_nonlocalizedevents.models import Superevent, EventLocalization
+from tom_nonlocalizedevents.models import NonLocalizedEvent, EventLocalization
 
 
-class SupereventFactory(factory.django.DjangoModelFactory):
+class NonLocalizedEventFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Superevent
+        model = NonLocalizedEvent
 
-    superevent_id = factory.Faker('pystr')
-    superevent_url = factory.Faker('pystr')
+    event_id = factory.Faker('pystr')
+    skymap_file_url = factory.Faker('pystr')
 
 
 class EventLocalizationFactory(factory.django.DjangoModelFactory):
