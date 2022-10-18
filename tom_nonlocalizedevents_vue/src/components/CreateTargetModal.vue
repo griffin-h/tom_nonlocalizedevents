@@ -36,7 +36,7 @@
                 type: Array,
                 required: false
             },
-            supereventId: {
+            supereventPk: {
                 type: Number,
                 required: true
             }
@@ -92,7 +92,7 @@
                     .then(response => {
                         // create event candidates from new targets
                         let eventCandidateData = response.map(targetResponse => (
-                            {superevent: this.supereventId, target: targetResponse.data.id}
+                            {nonlocalizedevent: this.supereventPk, target: targetResponse.data.id}
                         ));
                         axios
                             .post(`${this.$store.state.tomApiBaseUrl}/api/eventcandidates/`, eventCandidateData)

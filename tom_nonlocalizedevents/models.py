@@ -78,7 +78,7 @@ class NonLocalizedEvent(models.Model):
 
 class EventCandidate(models.Model):
     target = models.ForeignKey(Target, on_delete=models.CASCADE)
-    nonlocalizedevent = models.ForeignKey(NonLocalizedEvent, on_delete=models.CASCADE)
+    nonlocalizedevent = models.ForeignKey(NonLocalizedEvent, related_name='candidates', on_delete=models.CASCADE)
 
     viable = models.BooleanField(
         default=True,

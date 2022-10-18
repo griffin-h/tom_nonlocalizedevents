@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tom-nonlocalizedevents"
-version = "0.5.2"
+version = "0.5.3"
 description = "Reusable TOMToolkit app to support gravitational wave superevent and other nonlocalized event EM follow-up observations."
 authors = ["TOM Toolkit Project <tomtoolkit@lco.global>", "David Collom <dcollom@lco.global>", "Lindy Lindstrom <llindstrom@lco.global>", "Jonathan Nation <jnation@lco.global>"]
 license = "GPL-3.0-only"
@@ -38,6 +38,7 @@ python-dateutil = "^2.8"
 django-webpack-loader = "1.6.0"
 tomtoolkit = "^2.10"
 voevent-parse = "^1.0"
+django-filter = ">=21.0 <22.0"
 
 [tool.poetry.dev-dependencies]
 coverage = "^6.3.2"

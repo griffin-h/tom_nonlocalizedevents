@@ -2,8 +2,8 @@
     <b-container>
         <b-table
             striped
-            :primary-key="id"
-            :sort-by="priority"
+            primary-key="id"
+            sort-by="priority"
             :fields="candidateFields"
             :items="candidates">
             <!-- see https://bootstrap-vue.org/docs/components/table#custom-data-rendering -->
@@ -51,8 +51,7 @@ export default {
             candidateFields: [
                 //{ 'key': 'priority', 'label': 'Priority', 'sortable': true },
                 { 'key': 'target-link', 'label': 'Candidate', 'sortable': true },
-                { 'key': 'superevent', 'label': 'Superevent', 'sortable': true },
-                { 'key': 'superevent.note', 'label': 'Note' },
+                { 'key': 'nonlocalizedevent', 'label': 'Superevent', 'sortable': true },
                 { 'key': 'target.ra', 'label': 'RA', formatter: (value, key, item) => value.toLocaleString() },
                 { 'key': 'target.dec', 'label': 'DEC', formatter: (value, key, item) => value.toLocaleString() },
                 { 'key': 'active' },

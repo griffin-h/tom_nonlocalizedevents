@@ -45,7 +45,7 @@ class NonLocalizedEventSerializer(serializers.HyperlinkedModelSerializer):
                   'id', 'event_candidates', 'created', 'modified']
 
     def get_event_candidates(self, instance):
-        alerts = instance.eventcandidate_set.all()
+        alerts = instance.candidates.all()
         # This returns the nonlocalied event identifier, which means it's duplicated in the response.
         # The NonLocalizedEventSerializer should therefore use its own custom EventCandidateSerializer
         # rather than the one defined above.

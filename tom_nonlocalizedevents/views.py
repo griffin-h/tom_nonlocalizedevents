@@ -8,13 +8,12 @@ from django.views.generic.base import View
 from django.urls import reverse
 
 from rest_framework import permissions, viewsets
-
-# from tom_alerts.alerts import get_service_class
+from django_filters.rest_framework import DjangoFilterBackend
 
 from tom_nonlocalizedevents.nonlocalizedevent_clients.gravitational_wave import GravitationalWaveClient
 
-from .models import EventCandidate, EventLocalization, NonLocalizedEvent
-from .serializers import EventCandidateSerializer, EventLocalizationSerializer, NonLocalizedEventSerializer
+from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
+from tom_nonlocalizedevents.serializers import EventCandidateSerializer, EventLocalizationSerializer, NonLocalizedEventSerializer
 
 
 class NonLocalizedEventListView(ListView):
@@ -23,6 +22,10 @@ class NonLocalizedEventListView(ListView):
     """
     model = NonLocalizedEvent
     template_name = 'tom_nonlocalizedevents/index.html'
+
+    def get_queryset(self):
+        qs = NonLocalizedEvent.objects.order_by('event_id').distinct('event_id')
+        return qs
 
 
 class NonLocalizedEventDetailView(DetailView):
@@ -145,6 +148,8 @@ class NonLocalizedEventViewSet(viewsets.ModelViewSet):
     queryset = NonLocalizedEvent.objects.all()
     serializer_class = NonLocalizedEventSerializer
     permission_classes = []
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['event_id', 'sequence_id', 'event_type']
 
 
 class EventCandidateViewSet(viewsets.ModelViewSet):
@@ -156,6 +161,8 @@ class EventCandidateViewSet(viewsets.ModelViewSet):
     queryset = EventCandidate.objects.all()
     serializer_class = EventCandidateSerializer
     permission_classes = []  # TODO: re-implement auth permissions
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['nonlocalizedevent', 'viable', 'priority']
 
     def get_serializer(self, *args, **kwargs):
         # In order to ensure the list_serializer_class is used for bulk_create, we check that the POST data is a list
@@ -192,11 +199,31 @@ class EventLocalizationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class SupereventView(TemplateView):
+class SupereventPkView(TemplateView):
     template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
 
     def get_context_data(self, **kwargs: dict) -> dict:
         context = super().get_context_data(**kwargs)
         superevent = NonLocalizedEvent.objects.get(pk=kwargs['pk'])
-        context['superevent_identifier'] = superevent.event_id
+        sequences = list(NonLocalizedEvent.objects.filter(
+            event_id=superevent.event_id).values('sequence_id', 'created', 'pk'))
+        for sequence in sequences:
+            # Set the created date as a string so it can be in json format
+            sequence['created'] = sequence['created'].isoformat()
+        context['superevent_id'] = superevent.event_id
+        context['sequences'] = json.dumps(sequences)
+        return context
+
+class SupereventIdView(TemplateView):
+    template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
+
+    def get_context_data(self, **kwargs: dict) -> dict:
+        context = super().get_context_data(**kwargs)
+        sequences = list(NonLocalizedEvent.objects.filter(
+            event_id=kwargs['event_id']).values('sequence_id', 'created', 'pk'))
+        for sequence in sequences:
+            # Set the created date as a string so it can be in json format
+            sequence['created'] = sequence['created'].isoformat()
+        context['superevent_id'] = kwargs['event_id']
+        context['sequences'] = json.dumps(sequences)
         return context

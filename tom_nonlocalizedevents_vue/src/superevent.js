@@ -2,7 +2,7 @@ import axios from 'axios';
 import Vue from 'vue'
 import Vuex from 'vuex';
 import store from './vuex/vuex_store_as_plugin';
-import SupereventDetail from './SupereventDetail.vue'
+import SupereventSequences from './SupereventSequences.vue'
 import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue';
 import { TOMToolkitComponentLib } from 'tom-toolkit-component-lib';
 import 'bootstrap/dist/css/bootstrap.css'  // This line and the following is necessary to get bootstrap working
@@ -28,8 +28,9 @@ axios
     Vue.prototype.$store.commit('setSkipApiBaseUrl', 'http://skip.dev.hop.scimma.org');
     Vue.prototype.$store.commit('setSkipAxiosConfig', {withCredentials: false});
     new Vue({
-      render: h => h(SupereventDetail, {}),
-    }).$mount('#superevent-detail')
+      el: '#superevent-sequences',
+      components: {SupereventSequences}
+    });
   })
   .catch(error => {
     console.log('Error getting URL configuration');

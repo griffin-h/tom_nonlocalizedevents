@@ -44,7 +44,7 @@
 
     export default {
         props: {
-            supereventId: {
+            supereventPk: {
                 type: Number,
                 required: true
             },
@@ -137,7 +137,7 @@
                 if (this.selectedTargets.length !== 0) {  // Check if any targets are selected
                     let eventCandidateData = []
                     this.selectedTargets.forEach(target => eventCandidateData.push(  // Populate form data with event candidate data
-                        {superevent: this.supereventId, target: target}
+                        {nonlocalizedevent: this.supereventPk, target: target}
                     ));
                     this.createEventCandidates(eventCandidateData, (numCandidates) => {
                         this.$bvModal.hide('candidate-form-modal');
@@ -152,7 +152,7 @@
                         .post(`${this.$store.state.tomApiBaseUrl}/api/targets/`, targetData)
                         .then(response => {
                             let targetId = response.data.id;
-                            this.createEventCandidates({superevent: this.supereventId, target: targetId}, (numCandidates) => {
+                            this.createEventCandidates({nonlocalizedevent: this.supereventPk, target: targetId}, (numCandidates) => {
                                 this.$bvModal.hide('candidate-form-modal');
                                 this.$emit('created-candidates', numCandidates);
                             })

@@ -43,7 +43,7 @@ class TestNonLocalizedEventViewSet(NonLocalizedEventAPITestCase):
         response = self.client.get(reverse('nonlocalizedevents:detail', args=(self.superevent1.pk,)))
 
         self.assertContains(response, self.superevent1.event_id)
-        self.assertContains(response, "superevent-detail")
+        self.assertContains(response, "superevent-sequences")
         self.assertContains(response, "vue")
 
 

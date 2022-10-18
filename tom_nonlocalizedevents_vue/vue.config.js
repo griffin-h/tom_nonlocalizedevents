@@ -19,6 +19,7 @@ const pages = {
 module.exports = {
     pages: pages,
     filenameHashing: false,
+    runtimeCompiler: true,
     productionSourceMap: false,
     // this key is written in to the webpack-stats.json file during local development
     // (i.e. non-production) and the JS is served by the npm run serve server.

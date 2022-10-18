@@ -1,14 +1,13 @@
 <template>
   <div>
     <div>
-      <b-alert v-for="message in messages" :key="message" show>
+      <b-alert v-for="message in messages" :key="message" show dismissable>
         {{ message }}
       </b-alert>
-      <b-alert :show="showCreatedCandidatesMessage" dismissable>{{
-        this.createdCandidatesMessage
-      }}</b-alert>
     </div>
-    <gravitational-wave-banner :supereventData="superevent_data" />
+    <div v-show="superevent_data.event_attributes !== undefined">
+      <gravitational-wave-banner :supereventData="superevent_data" />
+    </div>
     <b-row>
       <b-col cols="8">
         <alerts-table
@@ -20,13 +19,13 @@
         <h3>GraceDB BAYESTAR Images</h3>
         <b-row>
           <b-img-lazy
-            :src="getBayestarImageUrl(this.superevent_identifier, 'bayestar.volume.png')"
+            :src="getBayestarImageUrl(this.supereventId, 'bayestar.volume.png')"
             fluid
           ></b-img-lazy>
         </b-row>
         <b-row>
           <b-img-lazy
-            :src="getBayestarImageUrl(this.superevent_identifier, 'bayestar.png')"
+            :src="getBayestarImageUrl(this.supereventId, 'bayestar.png')"
             fluid
           ></b-img-lazy>
         </b-row>
@@ -35,7 +34,7 @@
     <b-row class="my-3">
       <b-col class="col-md-auto">
         <add-candidate-modal
-          :supereventId="this.superevent_id"
+          :supereventPk="this.supereventPk"
           :existingEventCandidates="this.eventCandidates"
           @created-candidates="onCreatedCandidates"
         />
@@ -43,7 +42,7 @@
       <b-col class="col-md-auto">
         <create-target-modal
           :alerts="this.selectedAlerts"
-          :supereventId="this.superevent_id"
+          :supereventPk="this.supereventPk"
           @created-target-candidates="onCreatedCandidates"
         />
       </b-col>
@@ -86,6 +85,11 @@ import {
 
 export default {
   name: "SupereventDetail",
+  props: {
+    supereventPk: Number,
+    supereventId: String,
+    sequenceId: Number
+  },
   components: {
     AddCandidateModal,
     AlertsTable,
@@ -105,7 +109,6 @@ export default {
       messages: [],
       eventCandidates: [],
       selectedAlerts: [],
-      superevent_identifier: undefined,
       superevent_data: {},
     };
   },
@@ -121,15 +124,8 @@ export default {
       });
     },
   },
-  props: {},
   mounted() {
     console.log("mounted SupereventDetail.vue");
-    this.superevent_id = window.location.pathname
-      .split("/")
-      .filter((x) => x)[1]; // primary key of superevent record
-    this.superevent_identifier = document.getElementById(
-      "superevent_identifier"
-    ).textContent; // identifier of superevent record
     this.getSupereventData();
     this.getGraceDBData();
   },
@@ -141,7 +137,7 @@ export default {
       // retrieve the superevent data from the REST API
       axios
         .get(
-          `${this.$store.state.tomApiBaseUrl}/api/nonlocalizedevents/${this.superevent_id}`
+          `${this.$store.state.tomApiBaseUrl}/api/nonlocalizedevents/${this.supereventPk}`
         )
         .then((response) => {
           response["data"]["event_candidates"].forEach((event_candidate) => {
@@ -151,7 +147,7 @@ export default {
         })
         .catch((error) => {
           console.log(
-            `getSupereventData: Error getting database data for ${this.superevent_id}: ${error}`
+            `getSupereventData: Error getting database data for pk ${this.supereventPk}: ${error}`
           );
           this.eventCandidates = oldEventCandidates;
         });
@@ -161,7 +157,7 @@ export default {
       // set this.alerts
       axios
         .get(
-          `${this.$store.state.skipApiBaseUrl}/api/events/?identifier=${this.superevent_identifier}`,
+          `${this.$store.state.skipApiBaseUrl}/api/events/?identifier=${this.supereventId}`,
           this.$store.state.skipAxiosConfig
         )
         .then((response) => {
@@ -176,21 +172,21 @@ export default {
             })
             .catch((error) => {
               console.log(
-                `Error getting alerts for superevent ${this.superevent_identifier}: ${error}`
+                `Error getting alerts for superevent ${this.supereventId}: ${error}`
               );
             });
         })
         .catch((error) => {
           console.log(
-            `Error getting details for superevent ${this.superevent_identifier}: ${error}`
+            `Error getting details for superevent ${this.supereventId}: ${error}`
           );
         });
     },
-    getBayestarImageUrl(superevent_identifier, image_filename) {
+    getBayestarImageUrl(superevent_id, image_filename) {
         // Construct URL with supplied argurments
         // for example: https://gracedb.ligo.org/api/superevents/S190426c/files/bayestar.volume.png"
           let url = 'https://gracedb.ligo.org/api/superevents/'
-                    + superevent_identifier
+                    + superevent_id
                     + '/files/'
                     + image_filename;
           //console.log('getBayestarImageUrl: ' + url);
