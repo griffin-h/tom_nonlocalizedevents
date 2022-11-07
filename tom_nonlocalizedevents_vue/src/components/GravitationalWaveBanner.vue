@@ -2,47 +2,50 @@
   <div>
     <b-jumbotron id="superevent-banner" class="py-4 pl-3 text-white">
       <b-row>
-        <b-col cols="12">
+        <b-col cols="2">
+          <h1><span id="superevent_name">{{ supereventId }}</span></h1>
+        </b-col>
+        <b-col cols="10">
           <b-row>
             <b-col>
-              <h3><span>Update {{ safeGetEventAttributes(0, "sequence_number", -1) }}</span></h3>
+              <h3><span>Update {{ safeGetEventAttributes("sequence_number", -1) }}</span></h3>
             </b-col>
             <b-col>
-              <h3><span>MassGap {{ safeGetEventAttributesAttribute(0, "prob_massgap") }}</span></h3>
+              <h3><span>MassGap {{ safeGetEventAttributesAttribute("prob_massgap") }}</span></h3>
             </b-col>
             <b-col>
-              <h3><span>NSBH {{ safeGetEventAttributesAttribute(0, "prob_nsbh") }}</span></h3>
+              <h3><span>NSBH {{ safeGetEventAttributesAttribute("prob_nsbh") }}</span></h3>
             </b-col>
             <b-col>
-              <h3><span>90%: {{ parseFloat(safeGetEventAttributesAttribute(0, "area_90")).toFixed(2) }}</span>
+              <h3><span>90%: {{ parseFloat(safeGetEventAttributesAttribute("area_90")).toFixed(2) }}</span>
               </h3>
             </b-col>
             <b-col>
-              <h3><span>{{ safeGetEventAttributesAttribute(0, "Instruments", "") }}</span></h3>
+              <h3><span>{{ safeGetEventAttributesAttribute("Instruments", "") }}</span></h3>
             </b-col>
             <b-col>
-              <h3><span>FAR {{ safeGetEventAttributesAttribute(0, "far") }}</span></h3>
+              <h3><span>FAR {{ safeGetEventAttributesAttribute("far") }}</span></h3>
             </b-col>
           </b-row>
           <b-row>
             <b-col>
-              <h3><span>BNS {{ safeGetEventAttributesAttribute(0, "prob_bns") }}</span></h3>
+              <h3><span>BNS {{ safeGetEventAttributesAttribute("prob_bns") }}</span></h3>
             </b-col>
             <b-col>
-              <h3><span>Terrestrial {{ safeGetEventAttributesAttribute(0, "prob_terres") }}</span></h3>
+              <h3><span>Terrestrial {{ safeGetEventAttributesAttribute("prob_terres") }}</span></h3>
             </b-col>
             <b-col>
-              <h3><span>BBH {{ safeGetEventAttributesAttribute(0, "prob_bbh") }}</span></h3>
+              <h3><span>BBH {{ safeGetEventAttributesAttribute("prob_bbh") }}</span></h3>
             </b-col>
             <b-col>
-              <h3><span>50%: {{ parseFloat(safeGetEventAttributesAttribute(0, "area_50")).toFixed(2) }}</span>
+              <h3><span>50%: {{ parseFloat(safeGetEventAttributesAttribute("area_50")).toFixed(2) }}</span>
               </h3>
             </b-col>
             <b-col>
-              <h3><span>{{ safeGetEventAttributesAttribute(0, "unknown_field", "") }}</span></h3>
+              <h3><span>{{ safeGetEventAttributesAttribute("unknown_field", "") }}</span></h3>
             </b-col>
             <b-col>
-              <h3><span>NS/Rem {{ safeGetEventAttributesAttribute(0, "prob_ns") }}</span></h3>
+              <h3><span>NS/Rem {{ safeGetEventAttributesAttribute("prob_ns") }}</span></h3>
             </b-col>
           </b-row>
         </b-col>
@@ -55,25 +58,24 @@
 export default {
   name: 'GravitationalWaveBanner',
   props: {
-    supereventData: {
+    eventAttributes: {
       type: Object,
       required: true
-    }
+    },
+    supereventId: String
   },
   methods: {
-    safeGetEventAttributes(event_id, field_name, fallback = 0) {
-      if ((this.supereventData.event_attributes !== undefined) &&
-          (this.supereventData.event_attributes[event_id] !== undefined) &&
-          (this.supereventData.event_attributes[event_id][field_name] !== undefined)) {
-        return this.supereventData.event_attributes[event_id][field_name];
+    safeGetEventAttributes(field_name, fallback = 0) {
+      if ((this.eventAttributes !== undefined) &&
+         (this.eventAttributes[field_name] !== undefined)) {
+        return this.eventAttributes[field_name];
       }
       return fallback;
     },
-    safeGetEventAttributesAttribute(event_id, attribute_name, fallback = 0) {
-      if ((this.supereventData.event_attributes !== undefined) &&
-          (this.supereventData.event_attributes[event_id] !== undefined) &&
-          (this.supereventData.event_attributes[event_id].attributes !== undefined)) {
-        return this.supereventData.event_attributes[event_id].attributes[attribute_name];
+    safeGetEventAttributesAttribute(attribute_name, fallback = 0) {
+      if ((this.eventAttributes !== undefined) &&
+          (this.eventAttributes.attributes !== undefined)) {
+        return this.eventAttributes.attributes[attribute_name];
       }
       return fallback;
     }

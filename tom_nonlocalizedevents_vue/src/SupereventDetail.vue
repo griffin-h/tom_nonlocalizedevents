@@ -6,7 +6,7 @@
       </b-alert>
     </div>
     <div v-show="superevent_data.event_attributes !== undefined">
-      <gravitational-wave-banner :supereventData="superevent_data" />
+      <gravitational-wave-banner :eventAttributes="superevent_attributes" :supereventId="supereventId" />
     </div>
     <b-row>
       <b-col cols="8">
@@ -19,13 +19,13 @@
         <h3>GraceDB BAYESTAR Images</h3>
         <b-row>
           <b-img-lazy
-            :src="getBayestarImageUrl(this.supereventId, 'bayestar.volume.png')"
+            :src="getVolumeImageUrl(volume_image=true)"
             fluid
           ></b-img-lazy>
         </b-row>
         <b-row>
           <b-img-lazy
-            :src="getBayestarImageUrl(this.supereventId, 'bayestar.png')"
+            :src="getVolumeImageUrl(volume_image=false)"
             fluid
           ></b-img-lazy>
         </b-row>
@@ -53,6 +53,7 @@
         <h3>Active Candidates</h3>
         <candidate-target-table
           :candidates="this.viableCandidates"
+          :sequenceId="this.sequenceId"
           @toggle-viability="onToggleViability"
           @change-priority="onChangePriority"
         />
@@ -63,6 +64,7 @@
         <h3>Retired Candidates</h3>
         <candidate-target-table
           :candidates="this.nonViableCandidates"
+          :sequenceId="this.sequenceId"
           @toggle-viability="onToggleViability"
           @change-priority="onChangePriority"
         />
@@ -110,6 +112,8 @@ export default {
       eventCandidates: [],
       selectedAlerts: [],
       superevent_data: {},
+      superevent_attributes: {},
+      sequence_skymap_fits_url: '',
     };
   },
   computed: {
@@ -125,9 +129,8 @@ export default {
     },
   },
   mounted() {
-    console.log("mounted SupereventDetail.vue");
     this.getSupereventData();
-    this.getGraceDBData();
+    this.getSkipDBData();
   },
   methods: {
     getSupereventData() {
@@ -140,10 +143,20 @@ export default {
           `${this.$store.state.tomApiBaseUrl}/api/nonlocalizedevents/${this.supereventPk}`
         )
         .then((response) => {
-          response["data"]["event_candidates"].forEach((event_candidate) => {
+          response["data"]["candidates"].forEach((event_candidate) => {
+            if(this.sequenceId.toString() in event_candidate['credible_regions']) {
+              event_candidate['credible_region'] = event_candidate['credible_regions'][this.sequenceId.toString()];
+            }
+            else {
+              event_candidate['credible_region'] = 100;
+            }
             this.eventCandidates.push(event_candidate);
           });
-          console.log(`getSupereventData: superevent event_candidates updated`);
+          for (let sequence_index in response["data"]["sequences"]) {
+            if (response["data"]["sequences"][sequence_index]["sequence_id"] == this.sequenceId) {
+              this.sequence_skymap_fits_url = response["data"]["sequences"][sequence_index]["skymap_fits_url"];
+            }
+          }
         })
         .catch((error) => {
           console.log(
@@ -152,7 +165,7 @@ export default {
           this.eventCandidates = oldEventCandidates;
         });
     },
-    getGraceDBData() {
+    getSkipDBData() {
       // set this.superevent_data
       // set this.alerts
       axios
@@ -162,6 +175,14 @@ export default {
         )
         .then((response) => {
           this.superevent_data = response["data"]["results"][0];
+          if (this.superevent_data.event_attributes !== undefined) {
+            for (const event_attributes_index in this.superevent_data.event_attributes) {
+              if (this.superevent_data.event_attributes[event_attributes_index]['sequence_number'] == this.sequenceId) {
+                this.superevent_attributes = this.superevent_data.event_attributes[event_attributes_index];
+                break;
+              }
+            }
+          }
           axios
             .get(
               `${this.$store.state.skipApiBaseUrl}/api/events/${response["data"]["results"][0]["id"]}`,
@@ -182,15 +203,17 @@ export default {
           );
         });
     },
-    getBayestarImageUrl(superevent_id, image_filename) {
-        // Construct URL with supplied argurments
-        // for example: https://gracedb.ligo.org/api/superevents/S190426c/files/bayestar.volume.png"
-          let url = 'https://gracedb.ligo.org/api/superevents/'
-                    + superevent_id
-                    + '/files/'
-                    + image_filename;
-          //console.log('getBayestarImageUrl: ' + url);
-          return url;
+    getVolumeImageUrl(volume_image=true) {
+      // Construct URL with the superevent id and base skymap fits moc url
+      // These files could eithe be a bayestar or LALInference file
+      // for example: https://gracedb.ligo.org/api/superevents/S190426c/files/bayestar.volume.png"
+      let image_base = '.png';
+      if (volume_image) {
+        image_base = '.volume.png';
+      }
+      let url = this.sequence_skymap_fits_url.replace('LALInference.multiorder.fits', 'LALInference' + image_base);
+      url = url.replace('bayestar.multiorder.fits', 'bayestar' + image_base);
+      return url;
     },
     onCreatedCandidates(count) {
       this.messages.push(`Successfully added ${count} candidates.`);
@@ -213,7 +236,7 @@ export default {
       const event_candidate = row.item;  // it's table of event_candidates, so row.items are event_candidates
       const url = `${this.$store.state.tomApiBaseUrl}/api/eventcandidates/${event_candidate.id}/`;
       const new_viablility = !event_candidate.viable;
-      const patch = { viable: new_viablility };  // construct the payload for the PATCH request
+      const patch = { viable: new_viablility, viability_reason: event_candidate.viability_reason };  // construct the payload for the PATCH request
 
       axios  // make the PATCH request
         .patch(url, patch) // patch only serializes/validates/updates the fields in the Request Body

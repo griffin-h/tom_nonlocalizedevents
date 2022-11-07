@@ -20,19 +20,9 @@ axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.withCredentials = true;
 
-axios
-  .get('/static/urls.json')
-  .then(response => {
-    Vue.prototype.$store.commit('setTomApiBaseUrl', response['data']['tomApiBaseUrl']);
-    Vue.prototype.$store.commit('setTomAxiosConfig', {xsrfHeaderName: 'x-csrftoken', xsrfCookieName: 'csrftoken', withCredentials: true});
-    Vue.prototype.$store.commit('setSkipApiBaseUrl', 'http://skip.dev.hop.scimma.org');
-    Vue.prototype.$store.commit('setSkipAxiosConfig', {withCredentials: false});
-    new Vue({
-      el: '#superevent-sequences',
-      components: {SupereventSequences}
-    });
-  })
-  .catch(error => {
-    console.log('Error getting URL configuration');
-    console.log(error);
-  });
+Vue.prototype.$store.commit('setTomAxiosConfig', {xsrfHeaderName: 'x-csrftoken', xsrfCookieName: 'csrftoken', withCredentials: true});
+Vue.prototype.$store.commit('setSkipAxiosConfig', {withCredentials: false});
+new Vue({
+  el: '#superevent-sequences',
+  components: {SupereventSequences}
+});

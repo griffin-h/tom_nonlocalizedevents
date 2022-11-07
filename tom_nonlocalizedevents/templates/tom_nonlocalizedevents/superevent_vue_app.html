@@ -7,7 +7,7 @@
     <div id="superevent_identifier" style="display: none">{{ superevent_id }}</div>
 
     <div id="superevent-sequences">
-        <superevent-sequences event_id="{{ superevent_id }}" sequences="{{ sequences }}"></superevent-sequences>
+        <superevent-sequences pk="{{ superevent_pk }}" event_id="{{ superevent_id }}" sequences="{{ sequences }}" tom_api_url="{{ tom_api_url }}" skip_api_url="{{ skip_api_url }}"></superevent-sequences>
     </div>
 
     {% render_bundle 'superevent_vue_app' config='TOM_NONLOCALIZEDEVENTS' %}

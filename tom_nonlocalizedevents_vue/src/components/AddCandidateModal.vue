@@ -65,7 +65,7 @@
                 userGroups: []
             }
         },
-        mounted() {
+        created() {
             this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
                 this.getTargets();
                 axios  // get groups available to user

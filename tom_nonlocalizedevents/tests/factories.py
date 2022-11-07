@@ -1,6 +1,7 @@
 import factory
+from datetime import datetime
 
-from tom_nonlocalizedevents.models import NonLocalizedEvent, EventLocalization
+from tom_nonlocalizedevents.models import NonLocalizedEvent, EventLocalization, EventSequence
 
 
 class NonLocalizedEventFactory(factory.django.DjangoModelFactory):
@@ -8,9 +9,16 @@ class NonLocalizedEventFactory(factory.django.DjangoModelFactory):
         model = NonLocalizedEvent
 
     event_id = factory.Faker('pystr')
-    skymap_file_url = factory.Faker('pystr')
+
+
+class EventSequenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = EventSequence
 
 
 class EventLocalizationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = EventLocalization
+
+    skymap_moc_file_url = factory.Faker('pystr')
+    date = factory.Faker('date_time')

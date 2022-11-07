@@ -8,6 +8,10 @@
 This reusable TOM Toolkit app provides support for gravitational wave (GW) superevent
 and other non-localized event electromagnetic (EM) follow up observations.  
 
+## Requirements
+
+This TOM plugin requires the use of a postgresql database backend, since it leverages some postgres specific stuff for MOC volume map lookups.
+
 ## Installation
 
 1. Install the package into your TOM environment:
@@ -15,10 +19,11 @@ and other non-localized event electromagnetic (EM) follow up observations.
     pip install tom-nonlocalizedevents
    ```
 
-2. In your project `settings.py`, add `tom_nonlocalizedevents` to your `INSTALLED_APPS` setting:
+2. In your project `settings.py`, add `tom_nonlocalizedevents` and `webpack_loader` to your `INSTALLED_APPS` setting:
 
     ```python
     INSTALLED_APPS = [
+        'webpack_loader',
         ...
         'tom_nonlocalizedevents',
     ]
@@ -50,11 +55,19 @@ and other non-localized event electromagnetic (EM) follow up observations.
    ]
    ```
 
-4. Copy ``tom_nonlocalizedevents/templates/tom_common/base.html`` into your project root's ``templates/tom_common/base.html``.
+4. Run ``python manage.py migrate`` to create the tom_nonlocalizedevents models.
 
-5. Run ``python manage.py migrate`` to create the tom_nonlocalizedevents models.
+5. Set environment variables below to configure different connections:
+| Env variable | Description | Default |
+|--------------|-------------|---------|
+| `SKIP_API_URL` | base URL to skip, used to get nonlocalized event details and candidates | `http://skip.dev.hop.scimma.org` |
+| `TOM_API_URL` | base URL to your TOM, usd to call the TOM API from the vue components | `http://localhost:8000` |
+| `SA_DB_CONNECTION_URL` | Location of your django postgres database used for sqlalchemy | uses Django `default` DB for the project |
+| `CREDIBLE_REGION_PROBABILITIES` | JSON List of Credible Region probabilities to automatically check each candidate target for | `'[0.25, 0.5, 0.75, 0.9, 0.95]'` |
 
-6. Add a `urls.json` that will end up in the root of your static files in the project using this module - usually this is `./static/` within your project directory. It must include a key for `tomApiBaseUrl` to the deployed url of your TOM, for csrf requests from the frontend to work properly. It defaults to localhost deployments and must be configured for production deployments.
+6. In your TOM project, make sure to run `python manage.py collectstatic` after installing this app, to collect its vue pages into your staticfiles dir.
+
+7. If you want to automatically ingest GW events into your TOM, you should also install the `tom_alertstreams` app into your TOM and configure it to use the tom_nonlocalizedevents handler to ingest GW events: `tom_nonlocalizedevents.alertstream_handlers.gw_event_handler.handle_message`. There is also a handler to handle retractions via the `handle_retraction` method in that package. These are currently written to work with LVC GW messages.
 
 ## Development
 

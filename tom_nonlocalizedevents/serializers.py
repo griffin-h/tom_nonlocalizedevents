@@ -2,13 +2,20 @@ from rest_framework import serializers
 from tom_targets.models import Target
 from tom_targets.serializers import TargetSerializer
 
-from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
+from tom_nonlocalizedevents.models import CredibleRegion, EventCandidate, EventLocalization, EventSequence, NonLocalizedEvent
+
+from healpix_alchemy.constants import PIXEL_AREA, HPX
+from astropy.coordinates import SkyCoord
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-class BulkCreateEventCandidateListSerializer(serializers.ListSerializer):
-    def create(self, validated_data):
-        event_candidates = [EventCandidate(**item) for item in validated_data]
-        return EventCandidate.objects.bulk_create(event_candidates)
+class CredibleRegionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CredibleRegion
+        fields = ['smallest_percent', 'localization', '']
 
 
 class EventCandidateSerializer(serializers.ModelSerializer):
@@ -18,12 +25,71 @@ class EventCandidateSerializer(serializers.ModelSerializer):
     See: https://www.django-rest-framework.org/api-guide/relations/#custom-relational-fields
     """
     nonlocalizedevent = serializers.PrimaryKeyRelatedField(queryset=NonLocalizedEvent.objects.all())
-    target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all())
+    target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all(), required=False)
+    target_fields = serializers.DictField(required=False, write_only=True)
+    credible_regions = serializers.SerializerMethodField()
+    UPDATE_KEYS = ['viable', 'viability_reason', 'priority']
 
     class Meta:
         model = EventCandidate
         fields = '__all__'
-        list_serializer_class = BulkCreateEventCandidateListSerializer
+        # list_serializer_class = BulkCreateEventCandidateListSerializer
+
+    def validate(self, data):
+        if self.context.get('request').method == 'PATCH':
+            # Patch requests on candidates should just be used to change viable boolean and reason and priority
+            if not any([key in data for key in self.UPDATE_KEYS]):
+                raise serializers.ValidationError(
+                    f"PATCH update must contain at least one of {self.UPDATE_KEYS.join(', ')} to update"
+                )
+        else:
+            if 'target' not in data and 'target_fields' not in data:
+                raise serializers.ValidationError(
+                    "Must specify either target or target_fields to create an EventCandidate"
+                )
+            if 'target_fields' in data and data['target_fields'].get('name'):
+                try:
+                    target = Target.objects.get(name=data['target_fields']['name'])
+                    data['target'] = target
+                    del data['target_fields']
+                except Target.DoesNotExist:
+                    target_serializer = TargetSerializer(data=data['target_fields'])
+                    target_serializer.is_valid()
+                    data['target_fields'] = target_serializer.validated_data
+        return super().validate(data)
+
+    def update(self, instance, validated_data):
+        instance.viable = validated_data.get('viable', instance.viable)
+        instance.viability_reason = validated_data.get('viability_reason', instance.viability_reason)
+        instance.priority = validated_data.get('priority', instance.priority)
+        instance.save()
+        return instance
+
+    def create(self, validated_data):
+        if 'target_fields' in validated_data:
+            target_fields = validated_data['target_fields']
+            name = target_fields['name']
+            del target_fields['name']
+            if name:
+                target, created = Target.objects.get_or_create(
+                    name=name,
+                    defaults=target_fields
+                )
+                if created:
+                    logger.warning(f"Created target with name {name}")
+                else:
+                    logger.warning(f"Got target with name {name}")
+                validated_data['target'] = target.id
+                del validated_data['target_fields']
+        super().create(validated_data)
+
+    def get_credible_regions(self, instance):
+        sequence_id_to_credible_region_percent = {}
+        credibleregions = instance.credibleregions.all()
+        for cr in credibleregions:
+            for sequence in cr.localization.sequences.all():
+                sequence_id_to_credible_region_percent[sequence.sequence_id] = cr.smallest_percent
+        return sequence_id_to_credible_region_percent
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -36,23 +102,35 @@ class EventCandidateSerializer(serializers.ModelSerializer):
         return representation
 
 
+class EventLocalizationSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = EventLocalization
+        fields = ['id', 'date', 'skymap_moc_file_url', 'distance_mean', 'distance_std']
+
+
+class EventSequenceSerializer(serializers.HyperlinkedModelSerializer):
+    localization = serializers.PrimaryKeyRelatedField(read_only=True)
+    skymap_fits_url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = EventSequence
+        fields = ['id', 'sequence_id', 'event_subtype', 'localization', 'skymap_fits_url']
+
+    def get_skymap_fits_url(self, instance):
+        return instance.localization.skymap_moc_file_url
+
+
 class NonLocalizedEventSerializer(serializers.HyperlinkedModelSerializer):
-    event_candidates = serializers.SerializerMethodField()
+    candidates = serializers.SerializerMethodField()
+    sequences = EventSequenceSerializer(many=True)
 
     class Meta:
         model = NonLocalizedEvent
-        fields = ['event_id', 'sequence_id', 'skymap_file_url',
-                  'id', 'event_candidates', 'created', 'modified']
+        fields = ['id', 'event_id', 'state', 'candidates', 'created', 'modified', 'sequences']
 
-    def get_event_candidates(self, instance):
+    def get_candidates(self, instance):
         alerts = instance.candidates.all()
         # This returns the nonlocalied event identifier, which means it's duplicated in the response.
         # The NonLocalizedEventSerializer should therefore use its own custom EventCandidateSerializer
         # rather than the one defined above.
         return EventCandidateSerializer(alerts, many=True).data
-
-
-class EventLocalizationSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = EventLocalization
-        fields = ['id', 'created', 'modified']

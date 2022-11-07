@@ -1,8 +1,10 @@
 ''' This class defines a message handler for a tom_alertstreams connection to GW events
 
 '''
-from tom_nonlocalizedevents.models import NonLocalizedEvent
+from tom_nonlocalizedevents.models import NonLocalizedEvent, EventSequence, EventLocalization
+from tom_nonlocalizedevents.healpix_utils import create_localization_for_multiorder_fits
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -14,39 +16,72 @@ EXPECTED_FIELDS = [
     'SKYMAP_FITS_URL'
 ]
 
-
-def extract_fields(message):
+def extract_fields(message, expected_fields):
     fields = {}
     keys = message.split('\n')
     for key in keys:
         if key:
             field_name = key.split(':')[0]
-            if field_name in EXPECTED_FIELDS:
-                fields[field_name] = key.split(':')[1].strip()
-    if set(EXPECTED_FIELDS) != set(fields.keys()):
+            if field_name in expected_fields:
+                fields[field_name] = key.split(':', maxsplit=1)[1].strip()
+    if set(expected_fields) != set(fields.keys()):
         logger.warning(f"Incoming GW message did not have the expected fields, ignoring it: {keys}")
         return {}
 
     return fields
 
 
-def handle_message(topic, message):
-    # It receives a string topic, and bytestring message in the LIGO GW format
+def get_moc_url_from_skymap_fits_url(skymap_fits_url):
+    base, filename = os.path.split(skymap_fits_url)
+    # Replace the non-MOC skymap url provided with the MOC version, but keep the ,# on the end
+    filename = filename.replace('LALInference.fits.gz', 'LALInference.multiorder.fits')
+    filename = filename.replace('bayestar.fits.gz', 'bayestar.multiorder.fits')
+    return os.path.join(base, filename)
+
+
+def handle_message(message):
+    # It receives a bytestring message or a Kafka message in the LIGO GW format
     # fields must be extracted from the message text and stored into in the model
-    fields = extract_fields(message.decode('utf-8'))
+    if not isinstance(message, bytes):
+        bytes_message = message.value()
+    else:
+        bytes_message = message
+    fields = extract_fields(bytes_message.decode('utf-8'), EXPECTED_FIELDS)
     if fields:
-        _, created = NonLocalizedEvent.objects.update_or_create(
+        nonlocalizedevent, created = NonLocalizedEvent.objects.get_or_create(
             event_id=fields['TRIGGER_NUM'],
-            sequence_id=fields['SEQUENCE_NUM'],
             event_type=NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE,
+        )
+        if created:
+            logger.info(f"Ingested a new GW event with id {fields['TRIGGER_NUM']} from alertstream")
+        # Next attempt to ingest and build the localization of the event
+        localization = create_localization_for_multiorder_fits(
+            nonlocalizedevent=nonlocalizedevent,
+            multiorder_fits_url=get_moc_url_from_skymap_fits_url(fields['SKYMAP_FITS_URL'])
+        )
+        # Now ingest the sequence for that event
+        EventSequence.objects.update_or_create(
+            nonlocalizedevent=nonlocalizedevent,
+            localization=localization,
+            sequence_id=fields['SEQUENCE_NUM'],
             defaults={
-                'skymap_fits_url': fields['SKYMAP_FITS_URL'],
                 'event_subtype': fields['NOTICE_TYPE']
             }
         )
-        if created:
-            logger.info("Ingested a GW event from alertstream")
-        else:
-            logger.warning(
-                f"GW event with id {fields['TRIGGER_NUM']} and sequence id {fields['SEQUENCE_NUM']} "
-                "already exists in the system")
+
+
+def handle_retraction(message):
+    # It receives a bytestring message or a Kafka message in the LIGO GW format
+    # For a retraction message, we just set the events status to retracted if it exists.
+    if not isinstance(message, bytes):
+        bytes_message = message.value()
+    else:
+        bytes_message = message
+    # Just need the event_id from the retraction messages
+    fields = extract_fields(bytes_message.decode('utf-8'), ['TRIGGER_NUM'])
+    # Then set the state to 'RETRACTED' for the event matching that id
+    try:
+        NonLocalizedEvent.objects.get(event_id=fields['TRIGGER_NUM']).update(
+            state=NonLocalizedEvent.NonLocalizedEventState.RETRACTED)
+    except NonLocalizedEvent.DoesNotExist:
+        logger.warning(f"Got a Retraction notice for event id {fields['TRIGGER_NUM']} which does not exist in the database")

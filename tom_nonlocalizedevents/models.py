@@ -1,6 +1,24 @@
 from django.db import models
+from django.contrib.postgres.fields import BigIntegerRangeField
+from django.contrib.postgres.indexes import SpGistIndex
 
 from tom_targets.models import Target
+
+import numpy as np
+from psycopg2.extensions import register_adapter, AsIs
+from healpix_alchemy.constants import PIXEL_AREA, HPX
+from astropy.coordinates import SkyCoord
+import logging
+
+def adapt_numpy_float64(np_float64):
+    return AsIs(np_float64)
+def adapt_numpy_int64(np_int64):
+    return AsIs(np_int64)
+register_adapter(np.float64, adapt_numpy_float64)
+register_adapter(np.int64, adapt_numpy_int64)
+
+
+logger = logging.getLogger(__name__)
 
 
 class NonLocalizedEvent(models.Model):
@@ -20,38 +38,37 @@ class NonLocalizedEvent(models.Model):
         NEUTRINO = 'NU', 'Neutrino'
         UNKNOWN = 'UNK', 'Unknown'
 
+    class NonLocalizedEventState(models.TextChoices):
+        ACTIVE = 'ACTIVE'
+        INACTIVE = 'INACTIVE'
+        RETRACTED = 'RETRACTED'
+
+    state = models.CharField(
+        max_length=16,
+        choices=NonLocalizedEventState.choices,
+        default=NonLocalizedEventState.ACTIVE,
+        help_text='The current state of this NonLocalizedEvent'
+    )
+
     event_type = models.CharField(
         max_length=3,
         choices=NonLocalizedEventType.choices,
         default=NonLocalizedEventType.GRAVITATIONAL_WAVE,
         help_text='The type of NonLocalizedEvent, used for determining how to ingest and display it'
     )
-    event_subtype = models.CharField(
-        max_length=256,
-        default='',
-        help_text='The subtype of the event. Options are type specific, i.e. GW events have initial, '
-                  'preliminary, update types.'
-    )
-
     # TODO: ask Curtis/Rachel/Andy about generalized use cases.
     event_id = models.CharField(
         max_length=64,
         help_text='Unique identifer for the event. I.E. the TRIGGER_NUM for a GW event.'
-    )
-    sequence_id = models.PositiveIntegerField(
-        default=1,
-        help_text='The version / update number of this event. I.E. the SEQUENCE_NUM for a GW event.'
-    )
-    skymap_file_url = models.URLField(
-        default='',
-        help_text='The URL to a file containing skymap details for the event.'
     )
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ['event_id', 'sequence_id']
+        constraints = [
+            models.UniqueConstraint(fields=['event_id'], name='unique_event_id')
+        ]
 
     @property
     def gracedb_url(self):
@@ -73,7 +90,75 @@ class NonLocalizedEvent(models.Model):
         return f"http://treasuremap.space/alerts?graceids={self.event_id}"
 
     def __str__(self):
-        return f"{self.event_id}_{self.sequence_id}"
+        return f"{self.event_id}"
+
+
+class EventLocalization(models.Model):
+    """Represents a region of the sky in which a nonlocalizedevent may have taken place.
+    """
+    nonlocalizedevent = models.ForeignKey(NonLocalizedEvent, related_name='localizations', on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(
+        help_text='The datestamp of this localizations creation.'
+    )
+    skymap_moc_file_url = models.URLField(
+        default='',
+        help_text='The URL to a file containing skymap MOC file for the event sequence. Used to generate localization.'
+    )
+    distance_mean = models.FloatField(
+        default=0,
+        help_text='The posterior mean distance in Mpc.'
+    )
+    distance_std = models.FloatField(
+        default=0,
+        help_text='The posterior standard deviation of the distance in Mpc.'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['nonlocalizedevent', 'date'], name='unique_date_per_nonlocalizedevent')
+        ]
+
+
+class EventSequence(models.Model):
+    nonlocalizedevent = models.ForeignKey(NonLocalizedEvent, related_name='sequences', on_delete=models.CASCADE)
+    localization = models.ForeignKey(EventLocalization, related_name='sequences', null=True, on_delete=models.SET_NULL)
+    sequence_id = models.PositiveIntegerField(
+        default=1,
+        help_text='The version / update number of this event. I.E. the SEQUENCE_NUM for a GW event.'
+    )
+    event_subtype = models.CharField(
+        max_length=256,
+        default='',
+        help_text='The subtype of the event. Options are type specific, i.e. GW events have initial, '
+                  'preliminary, update types.'
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['nonlocalizedevent', 'sequence_id'],
+                name='unique_sequence_per_nonlocalizedevent'
+            )
+        ]
+    # far = models.FloatField(
+    #     default=0,
+    #     verbose_name='false alarm rate',
+    #     help_text='The estimated false alarm rate'
+    # )
+    # event_probabilities = models.JSONField(
+    #     default=dict,
+    #     blank=True,
+    #     help_text='A dictionary of potential event source probabilities'
+    # )
+    # details = models.JSONField(
+    #     default=dict,
+    #     blank=True,
+    #     help_text='A dictionary for extra details related to this sequence of the event.'
+    # )
 
 
 class EventCandidate(models.Model):
@@ -92,18 +177,54 @@ class EventCandidate(models.Model):
         default=1,
         # TODO: add description, etc
     )
+    healpix = models.BigIntegerField(
+        default=-1,
+        help_text='Stores the healpix index for this candidates target, used for MOC lookups'
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.target:
+            self.healpix = HPX.skycoord_to_healpix(SkyCoord(self.target.ra, self.target.dec, unit='deg'))
+        super().save(*args, **kwargs)
 
     class Meta:
-        constraints = [  # TODO: this constraint isn't working
-            models.UniqueConstraint(fields=['target', 'nonlocalizedevent'], name='Unique Target/NonLocalizedEvent')
+        constraints = [
+            models.UniqueConstraint(fields=['target', 'nonlocalizedevent'], name='unique_target_nonlocalizedevent')
         ]
 
     def __str__(self):
         return f'EventCandidate({self.id}) NonLocalizedEvent: {self.nonlocalizedevent} Target: {self.target}'
 
 
-class EventLocalization(models.Model):
-    """Represents a region of the sky in which a nonlocalizedevent may have taken place.
+class CredibleRegion(models.Model):
+    localization = models.ForeignKey(EventLocalization, related_name='credibleregions', on_delete=models.CASCADE)
+    candidate = models.ForeignKey(EventCandidate, related_name='credibleregions', on_delete=models.CASCADE)
+
+    smallest_percent = models.IntegerField(
+        default=100,
+        help_text='Smallest percent credible region this candidate falls into for this localization.'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['localization', 'candidate'], name='unique_localization_candidate')
+        ]
+
+
+class SkymapTile(models.Model):
+    """ A healpix_alchemy style tile linked to an event localization
     """
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
+    localization = models.ForeignKey(EventLocalization, related_name='tiles', on_delete=models.CASCADE)
+    tile = BigIntegerRangeField(db_index=True)
+    probdensity = models.FloatField(null=False)
+    distance_mean = models.FloatField(
+        default=0
+    )
+    distance_std = models.FloatField(
+        default=0
+    )
+
+    class Meta:
+        indexes = [SpGistIndex(fields=('tile',))]

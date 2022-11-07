@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from tom_nonlocalizedevents.tests.factories import NonLocalizedEventFactory, EventLocalizationFactory
+from tom_nonlocalizedevents.tests.factories import NonLocalizedEventFactory, EventLocalizationFactory, EventSequenceFactory
 
 
 class NonLocalizedEventAPITestCase(APITestCase):
@@ -10,12 +10,14 @@ class NonLocalizedEventAPITestCase(APITestCase):
         self.user = User.objects.create(username='test_user')
         self.superevent1 = NonLocalizedEventFactory.create(event_id='superevent1')
         self.superevent2 = NonLocalizedEventFactory.create(event_id='superevent2')
-        self.eventlocalization1 = EventLocalizationFactory.create()
-        self.eventlocalization2 = EventLocalizationFactory.create()
-
-        # TODO: sort out django-guardian permissions
-        # assign_perm('tom_targets.view_target', self.user, self.st2)
-
+        self.eventlocalization1 = EventLocalizationFactory.create(nonlocalizedevent=self.superevent1)
+        self.eventlocalization2 = EventLocalizationFactory.create(nonlocalizedevent=self.superevent2)
+        self.sequence11 = EventSequenceFactory.create(
+            nonlocalizedevent=self.superevent1, localization=self.eventlocalization1
+        )
+        self.sequence21 = EventSequenceFactory.create(
+            nonlocalizedevent=self.superevent2, localization=self.eventlocalization2
+        )
         self.client.force_login(self.user)
 
 
@@ -27,9 +29,9 @@ class TestNonLocalizedEventViewSet(NonLocalizedEventAPITestCase):
 
         self.assertEqual(response.json()['count'], 2)
         self.assertContains(response, f'"event_id":"{self.superevent1.event_id}"')
-        self.assertContains(response, f'"skymap_file_url":"{self.superevent1.skymap_file_url}"')
+        self.assertContains(response, f'"skymap_fits_url":"{self.eventlocalization1.skymap_moc_file_url}"')
         self.assertContains(response, f'"event_id":"{self.superevent2.event_id}"')
-        self.assertContains(response, f'"skymap_file_url":"{self.superevent2.skymap_file_url}"')
+        self.assertContains(response, f'"skymap_fits_url":"{self.eventlocalization2.skymap_moc_file_url}"')
 
     def test_nonlocalizedevent_index_view(self):
         response = self.client.get(reverse('nonlocalizedevents:index'))

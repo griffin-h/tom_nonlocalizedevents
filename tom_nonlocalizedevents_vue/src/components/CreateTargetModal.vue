@@ -1,12 +1,12 @@
 <template>
     <div>
-        <b-button class="float-left" v-b-modal.candidate-from-target-modal variant="outline-primary" :disabled="alerts.length === 0">Add Candidates from Alerts</b-button>
+        <b-button class="float-left" v-b-modal.candidate-from-target-modal variant="outline-primary" :disabled="modalAlerts.length === 0">Add Candidates from Alerts</b-button>
         <b-modal id="candidate-from-target-modal" size="xl" title="Create Candidate(s) from Alerts">
             <b-container>
                 <div class="my-2">
                     <span>Targets to be created:</span>
                 </div>
-                <ttk-target-table :selectable="false" :targets="this.alerts" />
+                <ttk-target-table :selectable="false" :targets="this.modalAlerts" />
                 <hr />
                 <b-form @submit="onCandidateFromAlert">
                     <b-form-group label="Choose groups for new targets:">
@@ -44,13 +44,14 @@
         data() {
             return {
                 selectedGroups: [],
-                userGroups: []
+                userGroups: [],
+                modalAlerts: this.alerts
             }
         },
-        mounted() {
+        created() {
             this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
                 // map alert properties to TargetTable properties in order to display them
-                this.alerts = this.alerts.map(alert => {
+                this.modalAlerts = this.modalAlerts.map(alert => {
                     let modifiedAlert = alert;
                     modifiedAlert.name = alert.identifier;
                     modifiedAlert.ra = alert.right_ascension;
@@ -71,8 +72,7 @@
         },
         methods: {
             onCandidateFromAlert() {
-                let createdTargetPromises = [];
-                this.alerts.forEach(alert => {
+                this.modalAlerts.forEach(alert => {
                     let target_data = {
                         name: alert['identifier'],
                         ra: alert['right_ascension'],
@@ -82,31 +82,17 @@
                         targetextra_set: [],
                         groups: this.selectedGroups.map(group => ({id: group}))
                     };
-                    createdTargetPromises.push(
-                        axios.post(`${this.$store.state.tomApiBaseUrl}/api/targets/`, target_data, this.$store.state.tomAxiosConfig)
-                    );
+                    let eventCandidateData = {nonlocalizedevent: this.supereventPk, target_fields: target_data};
+                    axios
+                        .post(`${this.$store.state.tomApiBaseUrl}/api/eventcandidates/`, eventCandidateData)
+                        .then(response => {
+                            this.$bvModal.hide('candidate-from-target-modal');
+                            this.$emit('created-target-candidates', response.data.length);
+                        })
+                        .catch(error => {
+                            console.log(`Unable to create eventcandidates for new targets: ${error}`);
+                        });
                 });
-
-                Promise
-                    .all(createdTargetPromises) // Wait for all targets to be created
-                    .then(response => {
-                        // create event candidates from new targets
-                        let eventCandidateData = response.map(targetResponse => (
-                            {nonlocalizedevent: this.supereventPk, target: targetResponse.data.id}
-                        ));
-                        axios
-                            .post(`${this.$store.state.tomApiBaseUrl}/api/eventcandidates/`, eventCandidateData)
-                            .then(response => {
-                                this.$bvModal.hide('candidate-from-target-modal');
-                                this.$emit('created-target-candidates', response.data.length);
-                            })
-                            .catch(error => {
-                                console.log(`Unable to create eventcandidates for new targets: ${error}`);
-                            });
-                    })
-                    .catch(error => {
-                        console.log(`Unable to create event candidates: ${error}`)
-                    });
             },
             onSelectGroup(row, event) {
                 if (event === true) {

@@ -1,7 +1,9 @@
 import json
+import os
 
 from django.contrib import messages
 from django.core.cache import cache
+from django.http import Http404
 from django.shortcuts import redirect
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.base import View
@@ -149,7 +151,7 @@ class NonLocalizedEventViewSet(viewsets.ModelViewSet):
     serializer_class = NonLocalizedEventSerializer
     permission_classes = []
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['event_id', 'sequence_id', 'event_type']
+    filterset_fields = ['event_id', 'event_type']
 
 
 class EventCandidateViewSet(viewsets.ModelViewSet):
@@ -205,13 +207,16 @@ class SupereventPkView(TemplateView):
     def get_context_data(self, **kwargs: dict) -> dict:
         context = super().get_context_data(**kwargs)
         superevent = NonLocalizedEvent.objects.get(pk=kwargs['pk'])
-        sequences = list(NonLocalizedEvent.objects.filter(
-            event_id=superevent.event_id).values('sequence_id', 'created', 'pk'))
+        sequences = list(superevent.sequences.order_by('sequence_id').values(
+            'sequence_id', 'event_subtype', 'created', 'pk'))
         for sequence in sequences:
             # Set the created date as a string so it can be in json format
             sequence['created'] = sequence['created'].isoformat()
+        context['superevent_pk'] = kwargs['pk']
         context['superevent_id'] = superevent.event_id
         context['sequences'] = json.dumps(sequences)
+        context['tom_api_url'] = os.getenv('TOM_API_URL', 'http://localhost:8000')
+        context['skip_api_url'] = os.getenv('SKIP_API_URL', 'http://skip.dev.hop.scimma.org')
         return context
 
 class SupereventIdView(TemplateView):
@@ -219,11 +224,18 @@ class SupereventIdView(TemplateView):
 
     def get_context_data(self, **kwargs: dict) -> dict:
         context = super().get_context_data(**kwargs)
-        sequences = list(NonLocalizedEvent.objects.filter(
-            event_id=kwargs['event_id']).values('sequence_id', 'created', 'pk'))
-        for sequence in sequences:
-            # Set the created date as a string so it can be in json format
-            sequence['created'] = sequence['created'].isoformat()
-        context['superevent_id'] = kwargs['event_id']
-        context['sequences'] = json.dumps(sequences)
-        return context
+        try:
+            superevent = NonLocalizedEvent.objects.get(event_id=kwargs['event_id'])
+            sequences = list(superevent.sequences.order_by('sequence_id').values(
+                'sequence_id', 'event_subtype', 'created', 'pk'))
+            for sequence in sequences:
+                # Set the created date as a string so it can be in json format
+                sequence['created'] = sequence['created'].isoformat()
+            context['superevent_id'] = kwargs['event_id']
+            context['superevent_pk'] = superevent.pk
+            context['sequences'] = json.dumps(sequences)
+            context['tom_api_url'] = os.getenv('TOM_API_URL', 'http://127.0.0.1:8000')
+            context['skip_api_url'] = os.getenv('SKIP_API_URL', 'http://skip.dev.hop.scimma.org')
+            return context
+        except NonLocalizedEvent.DoesNotExist:
+            raise Http404

@@ -10,7 +10,7 @@ keywords = ["tomtoolkit", "astronomy", "astrophysics", "cosmology", "science"]
 classifiers = [
     "Environment :: Web Environment",
     "Framework :: Django",
-    "Framework :: Django :: 3.1",
+    "Framework :: Django :: 4.1",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -39,6 +39,12 @@ django-webpack-loader = "1.6.0"
 tomtoolkit = "^2.10"
 voevent-parse = "^1.0"
 django-filter = ">=21.0 <22.0"
+healpix-alchemy = ">=1.0.0"
+astropy-healpix = ">=0.7"
+MOCPy = ">=0.11.0"
+SQLAlchemy = "^1.4.42"
+psycopg2-binary = "^2.9.4"
+"ligo.skymap" = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 coverage = "^6.3.2"
