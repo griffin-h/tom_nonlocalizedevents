@@ -15,7 +15,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from tom_nonlocalizedevents.nonlocalizedevent_clients.gravitational_wave import GravitationalWaveClient
 
 from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
-from tom_nonlocalizedevents.serializers import EventCandidateSerializer, EventLocalizationSerializer, NonLocalizedEventSerializer
+from tom_nonlocalizedevents.serializers import (EventCandidateSerializer, EventLocalizationSerializer,
+                                                NonLocalizedEventSerializer)
 
 
 class NonLocalizedEventListView(ListView):
@@ -218,6 +219,7 @@ class SupereventPkView(TemplateView):
         context['tom_api_url'] = os.getenv('TOM_API_URL', 'http://localhost:8000')
         context['skip_api_url'] = os.getenv('SKIP_API_URL', 'http://skip.dev.hop.scimma.org')
         return context
+
 
 class SupereventIdView(TemplateView):
     template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'

@@ -7,6 +7,7 @@ from tom_nonlocalizedevents.healpix_utils import update_all_credible_region_perc
 import logging
 logger = logging.getLogger(__name__)
 
+
 @receiver(post_save, sender=EventCandidate)
 def cb_post_save_event_candidate(sender, instance, created, **kwargs):
     # Anytime an EventCandidate is created, create and save its probability for different levels of credible region

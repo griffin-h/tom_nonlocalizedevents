@@ -2,10 +2,11 @@ from rest_framework import serializers
 from tom_targets.models import Target
 from tom_targets.serializers import TargetSerializer
 
-from tom_nonlocalizedevents.models import CredibleRegion, EventCandidate, EventLocalization, EventSequence, NonLocalizedEvent
+from tom_nonlocalizedevents.models import (CredibleRegion, EventCandidate, EventLocalization,
+                                           EventSequence, NonLocalizedEvent)
 
-from healpix_alchemy.constants import PIXEL_AREA, HPX
-from astropy.coordinates import SkyCoord
+# from healpix_alchemy.constants import PIXEL_AREA, HPX
+# from astropy.coordinates import SkyCoord
 import logging
 
 logger = logging.getLogger(__name__)

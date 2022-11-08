@@ -6,14 +6,19 @@ from tom_targets.models import Target
 
 import numpy as np
 from psycopg2.extensions import register_adapter, AsIs
-from healpix_alchemy.constants import PIXEL_AREA, HPX
+from healpix_alchemy.constants import HPX
 from astropy.coordinates import SkyCoord
 import logging
 
+
 def adapt_numpy_float64(np_float64):
     return AsIs(np_float64)
+
+
 def adapt_numpy_int64(np_int64):
     return AsIs(np_int64)
+
+
 register_adapter(np.float64, adapt_numpy_float64)
 register_adapter(np.int64, adapt_numpy_int64)
 

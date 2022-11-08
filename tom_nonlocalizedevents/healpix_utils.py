@@ -20,8 +20,7 @@ import json
 import logging
 
 # from django.db.models import Sum, Subquery, F, Min
-
-from tom_nonlocalizedevents_base.settings import DATABASES
+# from tom_nonlocalizedevents_base.settings import DATABASES
 
 
 logger = logging.getLogger(__name__)
@@ -29,27 +28,33 @@ logger = logging.getLogger(__name__)
 POOL_RECYCLE = 4 * 60 * 60
 SA_DB_CONNECTION_URL = os.getenv(
     'SA_DB_CONNECTION_URL',
-    f"postgresql://{settings.DATABASES['default']['USER']}:{settings.DATABASES['default']['PASSWORD']}@{settings.DATABASES['default']['HOST']}:{settings.DATABASES['default']['PORT']}/{settings.DATABASES['default']['NAME']}"
-)
+    (f"postgresql://{settings.DATABASES['default']['USER']}:{settings.DATABASES['default']['PASSWORD']}"
+     f"@{settings.DATABASES['default']['HOST']}:{settings.DATABASES['default']['PORT']}"
+     f"/{settings.DATABASES['default']['NAME']}"))
 CREDIBLE_REGION_PROBABILITIES = sorted(json.loads(os.getenv(
     'CREDIBLE_REGION_PROBABILITIES', '[0.25, 0.5, 0.75, 0.9, 0.95]')), reverse=True)
 
 Base = declarative_base()
 sa_engine = sa.create_engine(SA_DB_CONNECTION_URL, pool_recycle=POOL_RECYCLE)
 
+
 def uniq_to_bigintrange(value):
     level, ipix = uniq_to_level_ipix(value)
     shift = 2 * (LEVEL - level)
     return (ipix << shift, (ipix + 1) << shift)
 
+
 def sequence_to_bigintrange(sequence):
     return f'[{sequence[0]},{sequence[1]})'
+
 
 def tiles_from_moc(moc):
     return (f'[{lo},{hi})' for lo, hi in moc._interval_set.nested)
 
+
 def tiles_from_polygon_skycoord(polygon):
     return tiles_from_moc(MOC.from_polygon_skycoord(polygon.transform_to(HPX.frame)))
+
 
 def create_localization_for_multiorder_fits(nonlocalizedevent, multiorder_fits_url):
     ''' Takes in a GraceDB url to multiorder fits file and creates the skymap tiles in db
@@ -73,7 +78,8 @@ def create_localization_for_multiorder_fits(nonlocalizedevent, multiorder_fits_u
                 date=creation_date
             )
             for i, row in enumerate(data):
-                # This is necessary to make sure we don't get an underflow error in postgres when operating with the probdensity float field
+                # This is necessary to make sure we don't get an underflow error in postgres
+                # when operating with the probdensity float field
                 probdensity = row['PROBDENSITY'] if row['PROBDENSITY'] > sys.float_info.min else 0
                 SkymapTile.objects.create(
                     localization=localization,
@@ -185,8 +191,8 @@ def update_credible_region_percent_for_candidates(eventlocalization, prob, event
 
 #     SkymapTile.objects.order_by('-probdensity').aggregate(cum_prob=Sum(F('probdensity') * F('tile__area')))
 
-#     cum_prob = SkymapTile.objects.order_by('-probdensity').alias(cum_prob=Sum(F('probdensity') * F('tile__area'))).annotate(
-#         cum_prob=F('cum_prob'),
+#     cum_prob = SkymapTile.objects.order_by('-probdensity').alias(cum_prob=Sum(F('probdensity') *
+#                F('tile__area'))).annotate(cum_prob=F('cum_prob'),
 #     )
 #     min_probdensity = SkymapTile.objects.order_by('-probdensity').alias(
 #         cum_prob=Sum(F('probdensity') * F('tile__area')), min_probdensity=Min(F('probdensity'))).annotate(
