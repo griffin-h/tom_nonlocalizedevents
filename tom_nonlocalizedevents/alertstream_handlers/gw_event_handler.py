@@ -1,7 +1,7 @@
 ''' This class defines a message handler for a tom_alertstreams connection to GW events
 
 '''
-from tom_nonlocalizedevents.models import NonLocalizedEvent, EventSequence, EventLocalization
+from tom_nonlocalizedevents.models import NonLocalizedEvent, EventSequence
 from tom_nonlocalizedevents.healpix_utils import create_localization_for_multiorder_fits
 import logging
 import os
@@ -15,6 +15,7 @@ EXPECTED_FIELDS = [
     'NOTICE_TYPE',
     'SKYMAP_FITS_URL'
 ]
+
 
 def extract_fields(message, expected_fields):
     fields = {}
@@ -84,4 +85,5 @@ def handle_retraction(message):
         NonLocalizedEvent.objects.get(event_id=fields['TRIGGER_NUM']).update(
             state=NonLocalizedEvent.NonLocalizedEventState.RETRACTED)
     except NonLocalizedEvent.DoesNotExist:
-        logger.warning(f"Got a Retraction notice for event id {fields['TRIGGER_NUM']} which does not exist in the database")
+        logger.warning((f"Got a Retraction notice for event id {fields['TRIGGER_NUM']}"
+                        f"which does not exist in the database"))
