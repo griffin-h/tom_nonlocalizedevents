@@ -10,7 +10,7 @@ and other non-localized event electromagnetic (EM) follow up observations.
 
 ## Requirements
 
-This TOM plugin requires the use of a postgresql database backend, since it leverages some postgres specific stuff for MOC volume map lookups.
+This TOM plugin requires the use of a postgresql 14+ database backend, since it leverages some postgres specific stuff for MOC volume map lookups.
 
 ## Installation
 
