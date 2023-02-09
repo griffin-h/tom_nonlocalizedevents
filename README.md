@@ -47,11 +47,18 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
 
     If `WEBPACK_LOADER` is already defined in your settings, then integrate these values in to it.
 
+    Also add the following to your settings if they are not already there, setting whatever default values you need for your setup. These point to your deployed TOM toolkit instance, and to a hermes instance:
+    ```python
+    TOM_API_URL = os.getenv('TOM_API_URL', 'http://127.0.0.1:8000')
+    HERMES_API_URL = os.getenv('HERMES_API_URL', 'http://hermes-dev.lco.gtn')
+
+    ```
+
 3. Include the tom_nonlocalizedevent URLconf in your project `urls.py`:
    ```python
    urlpatterns = [
         ...
-        path('nonlocalizedevents/', include('tom_nonlocalizedevents.urls')),
+        path('nonlocalizedevents/', include('tom_nonlocalizedevents.urls', namespace='nonlocalizedevents')),
    ]
    ```
 
@@ -60,9 +67,7 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
 5. Set environment variables below to configure different connections:
 | Env variable | Description | Default |
 |--------------|-------------|---------|
-| `SKIP_API_URL` | base URL to skip, used to get nonlocalized event details and candidates | `http://skip.dev.hop.scimma.org` |
-| `TOM_API_URL` | base URL to your TOM, usd to call the TOM API from the vue components | `http://localhost:8000` |
-| `SA_DB_CONNECTION_URL` | Location of your django postgres database used for sqlalchemy | uses Django `default` DB for the project |
+| `SA_DB_CONNECTION_URL` | Location of your django postgres database used for sqlalchemy | by default, this uses Django `default` DB for the project |
 | `CREDIBLE_REGION_PROBABILITIES` | JSON List of Credible Region probabilities to automatically check each candidate target for | `'[0.25, 0.5, 0.75, 0.9, 0.95]'` |
 
 6. In your TOM project, make sure to run `python manage.py collectstatic` after installing this app, to collect its vue pages into your staticfiles dir.
@@ -78,4 +83,3 @@ When any changes are made to this library, the vue files will need to be build a
 In order to run the tests, run the following in your virtualenv:
 
 `python manage.py test`
-

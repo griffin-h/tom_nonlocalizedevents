@@ -5,10 +5,10 @@
         {{ message }}
       </b-alert>
     </div>
-    <div v-show="superevent_data.event_attributes !== undefined">
+    <div v-show="superevent_data.sequences !== undefined">
       <gravitational-wave-banner :eventAttributes="superevent_attributes" :supereventId="supereventId" />
     </div>
-    <b-row>
+    <b-row style="margin-top: 6px;">
       <b-col cols="8">
         <alerts-table
           :alerts="alerts"
@@ -77,6 +77,7 @@
 <script>
 import axios from "axios";
 import _ from "lodash";
+import '@/assets/css/superevent.css';
 import {
   AddCandidateModal,
   AlertsTable,
@@ -130,7 +131,7 @@ export default {
   },
   mounted() {
     this.getSupereventData();
-    this.getSkipDBData();
+    this.getHermesDBData();
   },
   methods: {
     getSupereventData() {
@@ -165,37 +166,25 @@ export default {
           this.eventCandidates = oldEventCandidates;
         });
     },
-    getSkipDBData() {
+    getHermesDBData() {
       // set this.superevent_data
       // set this.alerts
       axios
         .get(
-          `${this.$store.state.skipApiBaseUrl}/api/events/?identifier=${this.supereventId}`,
+          `${this.$store.state.hermesApiBaseUrl}/api/v0/nonlocalizedevents/${this.supereventId}/`,
           this.$store.state.skipAxiosConfig
         )
         .then((response) => {
-          this.superevent_data = response["data"]["results"][0];
-          if (this.superevent_data.event_attributes !== undefined) {
-            for (const event_attributes_index in this.superevent_data.event_attributes) {
-              if (this.superevent_data.event_attributes[event_attributes_index]['sequence_number'] == this.sequenceId) {
-                this.superevent_attributes = this.superevent_data.event_attributes[event_attributes_index];
+          this.superevent_data = response["data"];
+          if (this.superevent_data.sequences !== undefined && this.superevent_data.sequences.length > 0) {
+            for (const sequence_index in this.superevent_data.sequences) {
+              if (this.superevent_data.sequences[sequence_index]['sequence_number'] == this.sequenceId) {
+                this.superevent_attributes = this.superevent_data.sequences[sequence_index].message.data;
                 break;
               }
             }
+            this.alerts = this.superevent_data.references;
           }
-          axios
-            .get(
-              `${this.$store.state.skipApiBaseUrl}/api/events/${response["data"]["results"][0]["id"]}`,
-              this.$store.state.skipAxiosConfig
-            )
-            .then((alert_response) => {
-              this.alerts = alert_response["data"]["alerts"];
-            })
-            .catch((error) => {
-              console.log(
-                `Error getting alerts for superevent ${this.supereventId}: ${error}`
-              );
-            });
         })
         .catch((error) => {
           console.log(

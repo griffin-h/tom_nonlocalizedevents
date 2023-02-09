@@ -5,9 +5,11 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.http import Http404
 from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.base import View
 from django.urls import reverse
+from django.conf import settings
 
 from rest_framework import permissions, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
@@ -19,7 +21,7 @@ from tom_nonlocalizedevents.serializers import (EventCandidateSerializer, EventL
                                                 NonLocalizedEventSerializer)
 
 
-class NonLocalizedEventListView(ListView):
+class NonLocalizedEventListView(LoginRequiredMixin, ListView):
     """
     Unadorned Django ListView subclass for NonLocalizedEvent model.
     """
@@ -202,7 +204,7 @@ class EventLocalizationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class SupereventPkView(TemplateView):
+class SupereventPkView(LoginRequiredMixin, TemplateView):
     template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
 
     def get_context_data(self, **kwargs: dict) -> dict:
@@ -216,12 +218,12 @@ class SupereventPkView(TemplateView):
         context['superevent_pk'] = kwargs['pk']
         context['superevent_id'] = superevent.event_id
         context['sequences'] = json.dumps(sequences)
-        context['tom_api_url'] = os.getenv('TOM_API_URL', 'http://localhost:8000')
-        context['skip_api_url'] = os.getenv('SKIP_API_URL', 'http://skip.dev.hop.scimma.org')
+        context['tom_api_url'] = settings.TOM_API_URL
+        context['hermes_api_url'] = settings.HERMES_API_URL
         return context
 
 
-class SupereventIdView(TemplateView):
+class SupereventIdView(LoginRequiredMixin, TemplateView):
     template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
 
     def get_context_data(self, **kwargs: dict) -> dict:
@@ -236,8 +238,8 @@ class SupereventIdView(TemplateView):
             context['superevent_id'] = kwargs['event_id']
             context['superevent_pk'] = superevent.pk
             context['sequences'] = json.dumps(sequences)
-            context['tom_api_url'] = os.getenv('TOM_API_URL', 'http://127.0.0.1:8000')
-            context['skip_api_url'] = os.getenv('SKIP_API_URL', 'http://skip.dev.hop.scimma.org')
+            context['tom_api_url'] = settings.TOM_API_URL
+            context['hermes_api_url'] = settings.HERMES_API_URL
             return context
         except NonLocalizedEvent.DoesNotExist:
             raise Http404

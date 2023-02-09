@@ -19,6 +19,7 @@
                 </b-form>
             </b-container>
             <template #modal-footer="{ cancel }">
+                <span v-if="submissionError" class="float-left text-danger">{{ JSON.stringify(submissionError) }}</span>
                 <b-button class="float-right" @click="onCandidateFromAlert" variant="primary">Add Candidates</b-button>
                 <b-button class="float-right" @click="cancel()">Cancel</b-button>
             </template>
@@ -45,17 +46,21 @@
             return {
                 selectedGroups: [],
                 userGroups: [],
-                modalAlerts: this.alerts
+                modalAlerts: this.alerts,
+                submissionError: null
             }
         },
         created() {
             this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
                 // map alert properties to TargetTable properties in order to display them
+                this.submissionError = null;
+                this.modalAlerts = this.alerts;
                 this.modalAlerts = this.modalAlerts.map(alert => {
                     let modifiedAlert = alert;
-                    modifiedAlert.name = alert.identifier;
-                    modifiedAlert.ra = alert.right_ascension;
-                    modifiedAlert.dec = alert.declination;
+                    modifiedAlert.identifier = alert.targets[0].name;
+                    modifiedAlert.name = alert.targets[0].name;
+                    modifiedAlert.ra = alert.targets[0].right_ascension;
+                    modifiedAlert.dec = alert.targets[0].declination;
                     return modifiedAlert;
                 });
 
@@ -72,11 +77,12 @@
         },
         methods: {
             onCandidateFromAlert() {
+                this.submissionError = null;
                 this.modalAlerts.forEach(alert => {
                     let target_data = {
-                        name: alert['identifier'],
-                        ra: alert['right_ascension'],
-                        dec: alert['declination'],
+                        name: alert['name'],
+                        ra: alert['ra'],
+                        dec: alert['dec'],
                         type: 'SIDEREAL',
                         aliases: [],
                         targetextra_set: [],
@@ -91,6 +97,7 @@
                         })
                         .catch(error => {
                             console.log(`Unable to create eventcandidates for new targets: ${error}`);
+                            this.submissionError = error.response.data;
                         });
                 });
             },

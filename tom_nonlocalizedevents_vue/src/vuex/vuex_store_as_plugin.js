@@ -1,4 +1,3 @@
-import axios from 'axios';
 import Vue from "vue/dist/vue.js";
 import Vuex from "vuex";
 import createPersistedState from "vuex-persistedstate";
@@ -15,23 +14,24 @@ plugins.push(createPersistedState({
 let store = new Vuex.Store({
     state: {
         tomApiBaseUrl: 'http://localhost:8000',
-        skipApiBaseUrl: 'http://skip.dev.hop.scimma.org',  // TODO: this should default to production whenever that exists
+        hermesApiBaseUrl: 'http://hermes-dev.lco.gtn',
         tomAxiosConfig: {},
-        skipAxiosConfig: {}
+        hermesAxiosConfig: {}
     },
     plugins: plugins,
     modules: {
         counter: CounterModule, // see @/vuex/vuex_counter_module.js
     },
     mutations: {
-        setSkipApiBaseUrl(state, url) {
-            state.skipApiBaseUrl = url;
+        setHermesApiBaseUrl(state, url) {
+            console.log("Setting url to " + url);
+            state.hermesApiBaseUrl = url;
         },
         setTomApiBaseUrl(state, url) {
             state.tomApiBaseUrl = url;
         },
-        setSkipAxiosConfig(state, config) {
-            state.skipAxiosConfig = config;
+        setHermesAxiosConfig(state, config) {
+            state.hermesAxiosConfig = config;
         },
         setTomAxiosConfig(state, config) {
             state.tomAxiosConfig = config;
