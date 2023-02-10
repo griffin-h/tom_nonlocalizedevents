@@ -5,7 +5,7 @@
         {{ message }}
       </b-alert>
     </div>
-    <div v-show="superevent_data.sequences !== undefined">
+    <div v-show="supereventHermesData.sequences !== undefined">
       <gravitational-wave-banner :eventAttributes="superevent_attributes" :supereventId="supereventId" />
     </div>
     <b-row style="margin-top: 6px;">
@@ -91,7 +91,11 @@ export default {
   props: {
     supereventPk: Number,
     supereventId: String,
-    sequenceId: Number
+    sequenceId: Number,
+    supereventHermesData: {
+      type: Object,
+      required: true
+    }
   },
   components: {
     AddCandidateModal,
@@ -129,9 +133,14 @@ export default {
       });
     },
   },
-  mounted() {
+  created() {
     this.getSupereventData();
-    this.getHermesDBData();
+    this.setupSupereventHermesData();
+  },
+  watch: {
+    supereventHermesData: function() {
+      this.setupSupereventHermesData();
+    }
   },
   methods: {
     getSupereventData() {
@@ -166,31 +175,16 @@ export default {
           this.eventCandidates = oldEventCandidates;
         });
     },
-    getHermesDBData() {
-      // set this.superevent_data
-      // set this.alerts
-      axios
-        .get(
-          `${this.$store.state.hermesApiBaseUrl}/api/v0/nonlocalizedevents/${this.supereventId}/`,
-          this.$store.state.skipAxiosConfig
-        )
-        .then((response) => {
-          this.superevent_data = response["data"];
-          if (this.superevent_data.sequences !== undefined && this.superevent_data.sequences.length > 0) {
-            for (const sequence_index in this.superevent_data.sequences) {
-              if (this.superevent_data.sequences[sequence_index]['sequence_number'] == this.sequenceId) {
-                this.superevent_attributes = this.superevent_data.sequences[sequence_index].message.data;
-                break;
-              }
-            }
-            this.alerts = this.superevent_data.references;
+    setupSupereventHermesData() {
+      if (this.supereventHermesData.sequences !== undefined && this.supereventHermesData.sequences.length > 0) {
+        for (const sequence_index in this.supereventHermesData.sequences) {
+          if (this.supereventHermesData.sequences[sequence_index]['sequence_number'] == this.sequenceId) {
+            this.superevent_attributes = this.supereventHermesData.sequences[sequence_index].message.data;
+            break;
           }
-        })
-        .catch((error) => {
-          console.log(
-            `Error getting details for superevent ${this.supereventId}: ${error}`
-          );
-        });
+        }
+        this.alerts = this.supereventHermesData.references;
+      }
     },
     getVolumeImageUrl(volume_image=true) {
       // Construct URL with the superevent id and base skymap fits moc url
