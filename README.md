@@ -65,12 +65,13 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
 4. Run ``python manage.py migrate`` to create the tom_nonlocalizedevents models.
 
 5. Set environment variables below to configure different connections:
+
 | Env variable | Description | Default |
-|--------------|-------------|---------|
+| ------------ | ----------- | ------- |
 | `SA_DB_CONNECTION_URL` | Location of your django postgres database used for sqlalchemy | by default, this uses Django `default` DB for the project |
 | `CREDIBLE_REGION_PROBABILITIES` | JSON List of Credible Region probabilities to automatically check each candidate target for | `'[0.25, 0.5, 0.75, 0.9, 0.95]'` |
 
-6. In your TOM project, make sure to run `python manage.py collectstatic` after installing this app, to collect its vue pages into your staticfiles dir.
+6. In your TOM project, make sure to run `python manage.py collectstatic` after installing this app, to collect its Vue pages into your `staticfiles` directory.
 
 7. If you want to automatically ingest GW events into your TOM, you should also install the `tom_alertstreams` app into your TOM and configure it to use the tom_nonlocalizedevents handler to ingest GW events: `tom_nonlocalizedevents.alertstream_handlers.gw_event_handler.handle_message`. There is also a handler to handle retractions via the `handle_retraction` method in that package. These are currently written to work with LVC GW messages.
 

@@ -9,6 +9,7 @@
               :ref="'sequence_' + sequence.sequence_id.toString()"
               :supereventPk="superevent_pk"
               :supereventId="event_id"
+              :supereventHermesData="superevent_data"
               :sequenceId="sequence.sequence_id"
             />
           </b-tab>
@@ -19,6 +20,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import SupereventDetail from '@/SupereventDetail.vue';
 import '@/assets/css/superevent.css';
 
@@ -35,6 +37,7 @@ export default {
     return {
       unpacked_sequences: JSON.parse(this.sequences),
       superevent_pk: parseInt(this.pk),
+      superevent_data: {},
     };
   },
   components: {
@@ -43,13 +46,29 @@ export default {
   created() {
     this.$store.commit('setTomApiBaseUrl', this.tom_api_url);
     this.$store.commit('setHermesApiBaseUrl', this.hermes_api_url);
-    console.log("created SupereventSequences.vue");
+    this.getHermesDBData();
   },
   methods: {
     getTabTitle(sequence_id, creation_date) {
       let date = new Date(creation_date);
       return 'Update ' + sequence_id.toString() + ': ' + date.toLocaleString();
-    }
+    },
+    getHermesDBData() {
+      // set this.superevent_data
+      axios
+        .get(
+          `${this.$store.state.hermesApiBaseUrl}/api/v0/nonlocalizedevents/${this.event_id}/`,
+          this.$store.state.hermesAxiosConfig
+        )
+        .then((response) => {
+          this.superevent_data = response["data"];
+        })
+        .catch((error) => {
+          console.log(
+            `Error getting details for superevent ${this.event_id}: ${error}`
+          );
+        });
+    },
   },
 };
 </script>

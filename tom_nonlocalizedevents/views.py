@@ -1,5 +1,4 @@
 import json
-import os
 
 from django.contrib import messages
 from django.core.cache import cache
@@ -152,7 +151,7 @@ class NonLocalizedEventViewSet(viewsets.ModelViewSet):
     """
     queryset = NonLocalizedEvent.objects.all()
     serializer_class = NonLocalizedEventSerializer
-    permission_classes = []
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['event_id', 'event_type']
 
@@ -165,7 +164,7 @@ class EventCandidateViewSet(viewsets.ModelViewSet):
     """
     queryset = EventCandidate.objects.all()
     serializer_class = EventCandidateSerializer
-    permission_classes = []  # TODO: re-implement auth permissions
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['nonlocalizedevent', 'viable', 'priority']
 
