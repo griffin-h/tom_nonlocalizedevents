@@ -82,8 +82,9 @@ def handle_retraction(message):
     fields = extract_fields(bytes_message.decode('utf-8'), ['TRIGGER_NUM'])
     # Then set the state to 'RETRACTED' for the event matching that id
     try:
-        NonLocalizedEvent.objects.get(event_id=fields['TRIGGER_NUM']).update(
-            state=NonLocalizedEvent.NonLocalizedEventState.RETRACTED)
+        retracted_event = NonLocalizedEvent.objects.get(event_id=fields['TRIGGER_NUM'])
+        retracted_event.state = NonLocalizedEvent.NonLocalizedEventState.RETRACTED
+        retracted_event.save()
     except NonLocalizedEvent.DoesNotExist:
         logger.warning((f"Got a Retraction notice for event id {fields['TRIGGER_NUM']}"
                         f"which does not exist in the database"))
