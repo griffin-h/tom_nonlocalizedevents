@@ -28,7 +28,8 @@ class NonLocalizedEventListView(LoginRequiredMixin, ListView):
     template_name = 'tom_nonlocalizedevents/index.html'
 
     def get_queryset(self):
-        qs = NonLocalizedEvent.objects.order_by('event_id').distinct('event_id')
+        # '-created' is most recent first
+        qs = NonLocalizedEvent.objects.order_by('-created')
         return qs
 
 
