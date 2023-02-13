@@ -1,5 +1,4 @@
 import json
-import os
 
 from django.contrib import messages
 from django.core.cache import cache

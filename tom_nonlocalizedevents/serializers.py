@@ -52,9 +52,12 @@ class EventCandidateSerializer(serializers.ModelSerializer):
                 try:
                     target = Target.objects.get(name=data['target_fields']['name'])
                     data['target'] = target
-                    if EventCandidate.objects.filter(target=target, nonlocalizedevent=data['nonlocalizedevent']).exists():
+                    if EventCandidate.objects.filter(
+                        target=target, nonlocalizedevent=data['nonlocalizedevent']
+                    ).exists():
                         raise serializers.ValidationError(
-                            f"Event Candidate already exists for target {target.name} and nonlocalizedevent {data['nonlocalizedevent'].event_id}")
+                            f"Event Candidate already exists for target {target.name} "
+                            f"and nonlocalizedevent {data['nonlocalizedevent'].event_id}")
                     del data['target_fields']
                 except Target.DoesNotExist:
                     target_serializer = TargetSerializer(data=data['target_fields'])
