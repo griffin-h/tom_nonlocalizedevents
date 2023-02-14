@@ -13,8 +13,6 @@ from django.conf import settings
 from rest_framework import permissions, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
-from tom_nonlocalizedevents.nonlocalizedevent_clients.gravitational_wave import GravitationalWaveClient
-
 from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
 from tom_nonlocalizedevents.serializers import (EventCandidateSerializer, EventLocalizationSerializer,
                                                 NonLocalizedEventSerializer)
@@ -31,51 +29,6 @@ class NonLocalizedEventListView(LoginRequiredMixin, ListView):
         # '-created' is most recent first
         qs = NonLocalizedEvent.objects.order_by('-created')
         return qs
-
-
-class NonLocalizedEventDetailView(DetailView):
-    """
-    Django DetailView subclass for NonLocalizedEvent model.
-
-    Has mechanism to supply templates specific to the type of NonLocalizedEvent
-    (GW, GRB, Nutrino).
-    """
-    model = NonLocalizedEvent
-    template_name = 'tom_nonlocalizedevents/detail.html'
-
-    # TODO: consider combining these dictionaries
-    template_mapping = {
-        NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE:
-            'tom_nonlocalizedevents/nonlocalizedevent_detail/gravitational_wave.html',
-        NonLocalizedEvent.NonLocalizedEventType.GAMMA_RAY_BURST:
-            'tom_nonlocalizedevents/nonlocalizedevent_detail/gamma_ray_burst.html',
-        NonLocalizedEvent.NonLocalizedEventType.NEUTRINO:
-            'tom_nonlocalizedevents/nonlocalizedevent_detail/neutrino.html',
-    }
-
-    # A client in this context is the interface to the service providing event info.
-    # (i.e GraceDB for gravitational wave events)
-    client_mapping = {
-        NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE: GravitationalWaveClient(),
-        NonLocalizedEvent.NonLocalizedEventType.GAMMA_RAY_BURST: None,
-        NonLocalizedEvent.NonLocalizedEventType.NEUTRINO: None,
-        NonLocalizedEvent.NonLocalizedEventType.UNKNOWN: None,
-    }
-
-    def get_template_names(self):
-        obj = self.get_object()
-        return [self.template_mapping[obj.event_type]]
-
-    # TODO: error handling
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        obj = self.get_object()
-        superevent_client = self.client_mapping[obj.event_type]
-        # TODO: should define superevent_client API (via ABC) for clients to implement
-        if superevent_client is not None:
-            context['superevent_data'] = superevent_client.get_superevent_data(obj.event_id)
-            context.update(superevent_client.get_additional_context_data(obj.event_id))
-        return context
 
 
 # from the tom_alerts query_result.html
