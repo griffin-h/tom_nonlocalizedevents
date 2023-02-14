@@ -34,6 +34,9 @@ def extract_fields(message, expected_fields):
 
 def get_moc_url_from_skymap_fits_url(skymap_fits_url):
     base, filename = os.path.split(skymap_fits_url)
+    # Repair broken skymap filenames given in gcn mock alerts right now
+    if filename.endswith('.fit'):
+        filename = filename + 's'
     # Replace the non-MOC skymap url provided with the MOC version, but keep the ,# on the end
     filename = filename.replace('LALInference.fits.gz', 'LALInference.multiorder.fits')
     filename = filename.replace('bayestar.fits.gz', 'bayestar.multiorder.fits')
