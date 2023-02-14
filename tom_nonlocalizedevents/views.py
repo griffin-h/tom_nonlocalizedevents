@@ -5,7 +5,7 @@ from django.core.cache import cache
 from django.http import Http404
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView, ListView, TemplateView
+from django.views.generic import ListView, TemplateView
 from django.views.generic.base import View
 from django.urls import reverse
 from django.conf import settings
