@@ -8,6 +8,9 @@
       <thead>
       <tr>
           <th scope="col">Detail Page</th>
+          <th scope="col">State</th>
+          <th scope="col">Updated (in TOM)</th>
+          <th scope="col">Created (in TOM)</th>
           <th scope="col">GraceDB</th>
           <th scope="col">Treasure Map</th>
           <th scope="col">Event Type</th>
@@ -19,8 +22,11 @@
           <td scope="row">
               {{event.id}}. <a href="{% url 'nonlocalizedevents:detail'  event.id %}"><b>{{ event.superevent_id }}</b> Details</a>
           </td>
+          <td>{{event.state }}</td>
+          <td>{{event.modified | timesince }}</td>
+          <td>{{event.created | timesince }}</td>
           <td>
-            <a href="{{ event.gracedb_url }}">{{ event.superevent_id }}</a>
+            <a href="{{ event.gracedb_url }}">{{ event.event_id }}</a>
         </td>
         <td>
             <a href="{{ event.treasuremap_url }}">{{ event.superevent_id }}</a>
