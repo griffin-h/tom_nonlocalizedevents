@@ -34,6 +34,9 @@ def extract_fields(message, expected_fields):
 
 def get_moc_url_from_skymap_fits_url(skymap_fits_url):
     base, filename = os.path.split(skymap_fits_url)
+    # Repair broken skymap filenames given in gcn mock alerts right now
+    if filename.endswith('.fit'):
+        filename = filename + 's'
     # Replace the non-MOC skymap url provided with the MOC version, but keep the ,# on the end
     filename = filename.replace('LALInference.fits.gz', 'LALInference.multiorder.fits')
     filename = filename.replace('bayestar.fits.gz', 'bayestar.multiorder.fits')
@@ -82,8 +85,9 @@ def handle_retraction(message):
     fields = extract_fields(bytes_message.decode('utf-8'), ['TRIGGER_NUM'])
     # Then set the state to 'RETRACTED' for the event matching that id
     try:
-        NonLocalizedEvent.objects.get(event_id=fields['TRIGGER_NUM']).update(
-            state=NonLocalizedEvent.NonLocalizedEventState.RETRACTED)
+        retracted_event = NonLocalizedEvent.objects.get(event_id=fields['TRIGGER_NUM'])
+        retracted_event.state = NonLocalizedEvent.NonLocalizedEventState.RETRACTED
+        retracted_event.save()
     except NonLocalizedEvent.DoesNotExist:
         logger.warning((f"Got a Retraction notice for event id {fields['TRIGGER_NUM']}"
                         f"which does not exist in the database"))

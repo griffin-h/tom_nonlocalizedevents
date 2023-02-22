@@ -52,6 +52,12 @@ class EventCandidateSerializer(serializers.ModelSerializer):
                 try:
                     target = Target.objects.get(name=data['target_fields']['name'])
                     data['target'] = target
+                    if EventCandidate.objects.filter(
+                        target=target, nonlocalizedevent=data['nonlocalizedevent']
+                    ).exists():
+                        raise serializers.ValidationError(
+                            f"Event Candidate already exists for target {target.name} "
+                            f"and nonlocalizedevent {data['nonlocalizedevent'].event_id}")
                     del data['target_fields']
                 except Target.DoesNotExist:
                     target_serializer = TargetSerializer(data=data['target_fields'])
@@ -68,21 +74,16 @@ class EventCandidateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         if 'target_fields' in validated_data:
-            target_fields = validated_data['target_fields']
-            name = target_fields['name']
-            del target_fields['name']
-            if name:
-                target, created = Target.objects.get_or_create(
-                    name=name,
-                    defaults=target_fields
-                )
-                if created:
-                    logger.warning(f"Created target with name {name}")
-                else:
-                    logger.warning(f"Got target with name {name}")
-                validated_data['target'] = target.id
-                del validated_data['target_fields']
-        super().create(validated_data)
+            try:
+                target = Target.objects.get(name=validated_data['target_fields']['name'])
+            except Target.DoesNotExist:
+                target_serializer = TargetSerializer(data=validated_data['target_fields'])
+                if target_serializer.is_valid():
+                    target = target_serializer.save()
+                    logger.info(f"Created target {target.id} with name {target.name}")
+            validated_data['target'] = target
+            del validated_data['target_fields']
+        return super().create(validated_data)
 
     def get_credible_regions(self, instance):
         sequence_id_to_credible_region_percent = {}

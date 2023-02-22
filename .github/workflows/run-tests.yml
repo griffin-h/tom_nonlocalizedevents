@@ -58,6 +58,20 @@ jobs:
 
   publish_coverage:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -71,6 +85,11 @@ jobs:
           poetry run python manage.py collectstatic --noinput
       - name: Run Tests
         run: poetry run coverage run --include=tom_* manage.py test --exclude-tag=canary
+        env:
+          DB_USER: postgres
+          DB_PASS: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
       - name: Report Coverage
         run: coveralls
         env:

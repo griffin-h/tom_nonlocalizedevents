@@ -5,10 +5,10 @@
         {{ message }}
       </b-alert>
     </div>
-    <div v-show="superevent_data.event_attributes !== undefined">
+    <div v-show="supereventHermesData.sequences !== undefined">
       <gravitational-wave-banner :eventAttributes="superevent_attributes" :supereventId="supereventId" />
     </div>
-    <b-row>
+    <b-row style="margin-top: 6px;">
       <b-col cols="8">
         <alerts-table
           :alerts="alerts"
@@ -77,6 +77,7 @@
 <script>
 import axios from "axios";
 import _ from "lodash";
+import '@/assets/css/superevent.css';
 import {
   AddCandidateModal,
   AlertsTable,
@@ -90,7 +91,11 @@ export default {
   props: {
     supereventPk: Number,
     supereventId: String,
-    sequenceId: Number
+    sequenceId: Number,
+    supereventHermesData: {
+      type: Object,
+      required: true
+    }
   },
   components: {
     AddCandidateModal,
@@ -128,9 +133,14 @@ export default {
       });
     },
   },
-  mounted() {
+  created() {
     this.getSupereventData();
-    this.getSkipDBData();
+    this.setupSupereventHermesData();
+  },
+  watch: {
+    supereventHermesData: function() {
+      this.setupSupereventHermesData();
+    }
   },
   methods: {
     getSupereventData() {
@@ -165,43 +175,16 @@ export default {
           this.eventCandidates = oldEventCandidates;
         });
     },
-    getSkipDBData() {
-      // set this.superevent_data
-      // set this.alerts
-      axios
-        .get(
-          `${this.$store.state.skipApiBaseUrl}/api/events/?identifier=${this.supereventId}`,
-          this.$store.state.skipAxiosConfig
-        )
-        .then((response) => {
-          this.superevent_data = response["data"]["results"][0];
-          if (this.superevent_data.event_attributes !== undefined) {
-            for (const event_attributes_index in this.superevent_data.event_attributes) {
-              if (this.superevent_data.event_attributes[event_attributes_index]['sequence_number'] == this.sequenceId) {
-                this.superevent_attributes = this.superevent_data.event_attributes[event_attributes_index];
-                break;
-              }
-            }
+    setupSupereventHermesData() {
+      if (this.supereventHermesData.sequences !== undefined && this.supereventHermesData.sequences.length > 0) {
+        for (const sequence_index in this.supereventHermesData.sequences) {
+          if (this.supereventHermesData.sequences[sequence_index]['sequence_number'] == this.sequenceId) {
+            this.superevent_attributes = this.supereventHermesData.sequences[sequence_index].message.data;
+            break;
           }
-          axios
-            .get(
-              `${this.$store.state.skipApiBaseUrl}/api/events/${response["data"]["results"][0]["id"]}`,
-              this.$store.state.skipAxiosConfig
-            )
-            .then((alert_response) => {
-              this.alerts = alert_response["data"]["alerts"];
-            })
-            .catch((error) => {
-              console.log(
-                `Error getting alerts for superevent ${this.supereventId}: ${error}`
-              );
-            });
-        })
-        .catch((error) => {
-          console.log(
-            `Error getting details for superevent ${this.supereventId}: ${error}`
-          );
-        });
+        }
+        this.alerts = this.supereventHermesData.references;
+      }
     },
     getVolumeImageUrl(volume_image=true) {
       // Construct URL with the superevent id and base skymap fits moc url

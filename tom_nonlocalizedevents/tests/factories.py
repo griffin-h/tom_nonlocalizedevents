@@ -1,6 +1,6 @@
 import factory
 # from datetime import datetime
-
+from django.db.models import signals
 from tom_nonlocalizedevents.models import NonLocalizedEvent, EventLocalization, EventSequence
 
 
@@ -16,6 +16,7 @@ class EventSequenceFactory(factory.django.DjangoModelFactory):
         model = EventSequence
 
 
+@factory.django.mute_signals(signals.post_save)
 class EventLocalizationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = EventLocalization

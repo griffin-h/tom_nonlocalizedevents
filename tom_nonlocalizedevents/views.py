@@ -1,25 +1,24 @@
 import json
-import os
 
 from django.contrib import messages
 from django.core.cache import cache
 from django.http import Http404
 from django.shortcuts import redirect
-from django.views.generic import DetailView, ListView, TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, TemplateView
 from django.views.generic.base import View
 from django.urls import reverse
+from django.conf import settings
 
 from rest_framework import permissions, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
-
-from tom_nonlocalizedevents.nonlocalizedevent_clients.gravitational_wave import GravitationalWaveClient
 
 from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
 from tom_nonlocalizedevents.serializers import (EventCandidateSerializer, EventLocalizationSerializer,
                                                 NonLocalizedEventSerializer)
 
 
-class NonLocalizedEventListView(ListView):
+class NonLocalizedEventListView(LoginRequiredMixin, ListView):
     """
     Unadorned Django ListView subclass for NonLocalizedEvent model.
     """
@@ -27,53 +26,9 @@ class NonLocalizedEventListView(ListView):
     template_name = 'tom_nonlocalizedevents/index.html'
 
     def get_queryset(self):
-        qs = NonLocalizedEvent.objects.order_by('event_id').distinct('event_id')
+        # '-created' is most recent first
+        qs = NonLocalizedEvent.objects.order_by('-created')
         return qs
-
-
-class NonLocalizedEventDetailView(DetailView):
-    """
-    Django DetailView subclass for NonLocalizedEvent model.
-
-    Has mechanism to supply templates specific to the type of NonLocalizedEvent
-    (GW, GRB, Nutrino).
-    """
-    model = NonLocalizedEvent
-    template_name = 'tom_nonlocalizedevents/detail.html'
-
-    # TODO: consider combining these dictionaries
-    template_mapping = {
-        NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE:
-            'tom_nonlocalizedevents/nonlocalizedevent_detail/gravitational_wave.html',
-        NonLocalizedEvent.NonLocalizedEventType.GAMMA_RAY_BURST:
-            'tom_nonlocalizedevents/nonlocalizedevent_detail/gamma_ray_burst.html',
-        NonLocalizedEvent.NonLocalizedEventType.NEUTRINO:
-            'tom_nonlocalizedevents/nonlocalizedevent_detail/neutrino.html',
-    }
-
-    # A client in this context is the interface to the service providing event info.
-    # (i.e GraceDB for gravitational wave events)
-    client_mapping = {
-        NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE: GravitationalWaveClient(),
-        NonLocalizedEvent.NonLocalizedEventType.GAMMA_RAY_BURST: None,
-        NonLocalizedEvent.NonLocalizedEventType.NEUTRINO: None,
-        NonLocalizedEvent.NonLocalizedEventType.UNKNOWN: None,
-    }
-
-    def get_template_names(self):
-        obj = self.get_object()
-        return [self.template_mapping[obj.event_type]]
-
-    # TODO: error handling
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        obj = self.get_object()
-        superevent_client = self.client_mapping[obj.event_type]
-        # TODO: should define superevent_client API (via ABC) for clients to implement
-        if superevent_client is not None:
-            context['superevent_data'] = superevent_client.get_superevent_data(obj.event_id)
-            context.update(superevent_client.get_additional_context_data(obj.event_id))
-        return context
 
 
 # from the tom_alerts query_result.html
@@ -150,7 +105,7 @@ class NonLocalizedEventViewSet(viewsets.ModelViewSet):
     """
     queryset = NonLocalizedEvent.objects.all()
     serializer_class = NonLocalizedEventSerializer
-    permission_classes = []
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['event_id', 'event_type']
 
@@ -163,7 +118,7 @@ class EventCandidateViewSet(viewsets.ModelViewSet):
     """
     queryset = EventCandidate.objects.all()
     serializer_class = EventCandidateSerializer
-    permission_classes = []  # TODO: re-implement auth permissions
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['nonlocalizedevent', 'viable', 'priority']
 
@@ -202,7 +157,7 @@ class EventLocalizationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class SupereventPkView(TemplateView):
+class SupereventPkView(LoginRequiredMixin, TemplateView):
     template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
 
     def get_context_data(self, **kwargs: dict) -> dict:
@@ -216,12 +171,12 @@ class SupereventPkView(TemplateView):
         context['superevent_pk'] = kwargs['pk']
         context['superevent_id'] = superevent.event_id
         context['sequences'] = json.dumps(sequences)
-        context['tom_api_url'] = os.getenv('TOM_API_URL', 'http://localhost:8000')
-        context['skip_api_url'] = os.getenv('SKIP_API_URL', 'http://skip.dev.hop.scimma.org')
+        context['tom_api_url'] = settings.TOM_API_URL
+        context['hermes_api_url'] = settings.HERMES_API_URL
         return context
 
 
-class SupereventIdView(TemplateView):
+class SupereventIdView(LoginRequiredMixin, TemplateView):
     template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
 
     def get_context_data(self, **kwargs: dict) -> dict:
@@ -236,8 +191,8 @@ class SupereventIdView(TemplateView):
             context['superevent_id'] = kwargs['event_id']
             context['superevent_pk'] = superevent.pk
             context['sequences'] = json.dumps(sequences)
-            context['tom_api_url'] = os.getenv('TOM_API_URL', 'http://127.0.0.1:8000')
-            context['skip_api_url'] = os.getenv('SKIP_API_URL', 'http://skip.dev.hop.scimma.org')
+            context['tom_api_url'] = settings.TOM_API_URL
+            context['hermes_api_url'] = settings.HERMES_API_URL
             return context
         except NonLocalizedEvent.DoesNotExist:
             raise Http404

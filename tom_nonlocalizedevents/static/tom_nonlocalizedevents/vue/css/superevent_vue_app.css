@@ -1,4 +1,4 @@
-@charset "UTF-8";#alerts-table[data-v-b5ce4bd4]{height:400px}#superevent-banner[data-v-4967a8fc]{width:100%;background-color:#06345c}span[data-v-4967a8fc]{color:#fff}
+@charset "UTF-8";.superevent-banner{margin:0!important;background-color:#06345c!important;color:#fff!important;padding:0;border-radius:0!important}.superevent-banner .card-title{margin-bottom:0}.jumbotron .superevent-banner{color:#fff!important;background-color:#06345c;margin-bottom:0;padding:0;border-radius:0}#superevent-sequences .card-header{border-radius:0;background-color:#06345c;border-bottom:0}#superevent-sequences .nav-item{padding-right:8px}#superevent-sequences .nav-link{color:#c8c8c8;background-color:#06345c}#superevent-sequences .nav-link:hover{color:#fff;outline:2px solid #0e538e}#superevent-sequences .nav-link.active{color:#fff;background-color:#0e538e}#alerts-table[data-v-0acbab5a]{height:400px}
 
 /*!
  * Bootstrap v4.6.2 (https://getbootstrap.com/)

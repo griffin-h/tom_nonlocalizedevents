@@ -15,7 +15,7 @@
             @row-clicked="showRowDetails"
         >
             <template #cell(selected)="data">
-                <div v-if="data.item.right_ascension !== null && data.item.declination !== null">
+                <div v-if="data.item.targets && data.item.targets.length > 0">
                     <b-form-checkbox @change="$emit('selected-alert', data, $event)" />
                 </div>
             </template>
@@ -28,31 +28,35 @@
                 </b-link>
             </template>
             <template #row-details="data">
-                <span v-if="data.item.parsed_message.body !== undefined">{{ data.item.parsed_message.body }}</span>
-                <div v-else-if="data.item.topic === 'lvc.lvc-counterpart'">
-                    <dl class="row" v-for="[key, value] in Object.entries(data.item.parsed_message)" :key="[key, value]">
+                <span v-if="data.item.topic.toUpperCase().includes('circular')">{{ data.item.message_text }}</span>
+                <div v-else-if="data.item.topic.toUpperCase().includes('LVC_COUNTERPART')">
+                    <dl class="row" v-for="[key, value] in Object.entries(data.item.data)" :key="[key, value]">
                         <dt class="col-md-3">{{ key }}: </dt>
                         <dd class="col-md-9">{{ value }}</dd>
                     </dl>
                 </div>
             </template>
             <template #cell(identifier)="data">
-                <b-link :href="getAlertUrl(data.item)">{{ data.value }}</b-link>
+                <span v-if="data.item.targets && data.item.targets.length > 0">
+                    <b-link :href="getAlertUrl(data.item)">{{ data.item.targets[0].name }}</b-link>
+                </span>
+                <span v-else>
+                    <b-link :href="getAlertUrl(data.item)">{{ data.item.id }}</b-link>
+                </span>
             </template>
             <template #cell(timestamp)="data">
                 {{ getAlertDate(data.item) }}
             </template>
             <template #cell(from)="data">
-                <span v-if="data.item.topic === 'gcn-circular'">
-                    {{ getSimplifiedFromField(data.item.parsed_message.from) }}
+                <span>
+                    {{ getSimplifiedFromField(data.item.submitter) }}
                 </span>
-                <span v-else-if="data.item.topic === 'lvc.lvc-counterpart'">Swift-XRT Observation</span>
             </template>
             <template #cell(subject)="data">
-                <span v-if="data.item.parsed_message.subject !== undefined">{{ data.item.parsed_message.subject }}</span>
-                <span v-else-if="data.item.right_ascension !== undefined && data.item.declination !== undefined">
-                    Right Ascension: {{ data.item.right_ascension_sexagesimal }}<br>
-                    Declination: {{ data.item.declination_sexagesimal }}
+                <span v-if="data.item.title">{{ data.item.title }}</span>
+                <span v-else-if="data.item.targets && data.item.targets.length > 0">
+                    Right Ascension: {{ data.item.targets[0].right_ascension_sexagesimal }}<br>
+                    Declination: {{ data.item.targets[0].declination_sexagesimal }}
                 </span>
             </template>
         </b-table>
@@ -89,13 +93,13 @@ export default {
     },
     methods: {
         getAlertUrl(alert) {
-            return `${this.$store.state.skipApiBaseUrl}/api/v2/alerts/${alert.id}`;
+            return `${this.$store.state.hermesApiBaseUrl}/api/v0/messages/${alert.id}`;
         },
         getAlertsFromAlertData() {
-            return this.alerts.filter(alert => alert.parsed_message.title !== "GCN/LVC NOTICE");
+            return this.alerts.filter(alert => alert.title !== "GCN/LVC NOTICE");
         },
         getAlertDate(alert) {
-            return moment(alert.timestamp).format('YYYY-MM-DD hh:mm:ss');
+            return moment(alert.published).format('YYYY-MM-DD hh:mm:ss');
         },
         getSimplifiedFromField(from) {
             // remove <name@example.com> part of from field; leave name at Institution

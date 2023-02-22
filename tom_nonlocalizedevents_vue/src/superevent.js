@@ -21,7 +21,7 @@ axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.withCredentials = true;
 
 Vue.prototype.$store.commit('setTomAxiosConfig', {xsrfHeaderName: 'x-csrftoken', xsrfCookieName: 'csrftoken', withCredentials: true});
-Vue.prototype.$store.commit('setSkipAxiosConfig', {withCredentials: false});
+Vue.prototype.$store.commit('setHermesAxiosConfig', {withCredentials: false});
 new Vue({
   el: '#superevent-sequences',
   components: {SupereventSequences}
