@@ -1,16 +1,25 @@
 import factory
+# from datetime import datetime
+from django.db.models import signals
+from tom_nonlocalizedevents.models import NonLocalizedEvent, EventLocalization, EventSequence
 
-from tom_nonlocalizedevents.models import Superevent, EventLocalization
 
-
-class SupereventFactory(factory.django.DjangoModelFactory):
+class NonLocalizedEventFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Superevent
+        model = NonLocalizedEvent
 
-    superevent_id = factory.Faker('pystr')
-    superevent_url = factory.Faker('pystr')
+    event_id = factory.Faker('pystr')
 
 
+class EventSequenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = EventSequence
+
+
+@factory.django.mute_signals(signals.post_save)
 class EventLocalizationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = EventLocalization
+
+    skymap_moc_file_url = factory.Faker('pystr')
+    date = factory.Faker('date_time')

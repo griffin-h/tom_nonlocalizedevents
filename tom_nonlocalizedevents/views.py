@@ -2,103 +2,52 @@ import json
 
 from django.contrib import messages
 from django.core.cache import cache
+from django.http import Http404
 from django.shortcuts import redirect
-from django.views.generic import DetailView, ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, TemplateView
 from django.views.generic.base import View
 from django.urls import reverse
+from django.conf import settings
 
 from rest_framework import permissions, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 
-from tom_alerts.alerts import get_service_class
-
-from tom_nonlocalizedevents.superevent_clients.gravitational_wave import GravitationalWaveClient
-
-from .models import EventCandidate, EventLocalization, Superevent
-from .serializers import EventCandidateSerializer, EventLocalizationSerializer, SupereventSerializer
+from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
+from tom_nonlocalizedevents.serializers import (EventCandidateSerializer, EventLocalizationSerializer,
+                                                NonLocalizedEventSerializer)
 
 
-class NonlocalizedEventListView(ListView):
+class NonLocalizedEventListView(LoginRequiredMixin, ListView):
     """
-    Unadorned Django ListView subclass for Superevent model.
-    (To be updated when Superevent model is renamed to NonlocalizedEvent).
+    Unadorned Django ListView subclass for NonLocalizedEvent model.
     """
-    model = Superevent
+    model = NonLocalizedEvent
     template_name = 'tom_nonlocalizedevents/index.html'
 
-
-class NonlocalizedEventDetailView(DetailView):
-    """
-    Django DetailView subclass for SuperEvent model.
-    (To be updated when Superevent model is renamed to NonlocalizedEvent).
-
-    Has mechanism to supply templates specific to the type of NonlocalizedEvent
-    (GW, GRB, Nutrino).
-    """
-    model = Superevent
-    template_name = 'tom_nonlocalizedevents/detail.html'
-
-    # TODO: consider combining these dictionaries
-    template_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE:
-            'tom_nonlocalizedevents/superevent_detail/gravitational_wave.html',
-        Superevent.SupereventType.GAMMA_RAY_BURST:
-            'tom_nonlocalizedevents/superevent_detail/gamma_ray_burst.html',
-        Superevent.SupereventType.NEUTRINO:
-            'tom_nonlocalizedevents/superevent_detail/neutrino.html',
-    }
-
-    # A client in this context is the interface to the service providing event info.
-    # (i.e GraceDB for gravitational wave events)
-    client_mapping = {
-        Superevent.SupereventType.GRAVITATIONAL_WAVE: GravitationalWaveClient(),
-        Superevent.SupereventType.GAMMA_RAY_BURST: None,
-        Superevent.SupereventType.NEUTRINO: None,
-        Superevent.SupereventType.UNKNOWN: None,
-    }
-
-    def get_template_names(self):
-        obj = self.get_object()
-        return [self.template_mapping[obj.superevent_type]]
-
-    # TODO: error handling
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        obj = self.get_object()
-        superevent_client = self.client_mapping[obj.superevent_type]
-        # TODO: should define superevent_client API (via ABC) for clients to implement
-        if superevent_client is not None:
-            context['superevent_data'] = superevent_client.get_superevent_data(obj.superevent_id)
-            context.update(superevent_client.get_additional_context_data(obj.superevent_id))
-        return context
+    def get_queryset(self):
+        # '-created' is most recent first
+        qs = NonLocalizedEvent.objects.order_by('-created')
+        return qs
 
 
 # from the tom_alerts query_result.html
 
 class CreateEventFromSCiMMAAlertView(View):
     """
-    Creates the models.Superevent instance and redirect to NonlocalizedEventDetailView
+    Creates the models.NonLocalizedEvent instance and redirect to NonLocalizedEventDetailView
     """
     pass
 
     def post(self, request, *args, **kwargs):
         """
         """
-        print('*** CreateFromAlertView.post ***')
-        # print(f'*** CreateFromAlertView.post request: {dir(request) }')
-        print(f'*** CreateFromAlertView.post args: {args}')
-        print(f'*** CreateFromAlertView.post kwargs: {kwargs}')
-
         # the request.POST is a QueryDict object;
         # for SCiMMA, alerts: list items are PKs to skip.dev.hop.scimma.org/api/alerts/PK/
         query_id = self.request.POST['query_id']
-        broker_name = self.request.POST['broker']  # should be "SCIMMA"
-        broker_class = get_service_class(broker_name)  # should be <class 'tom_scimma.scimma.SCIMMABroker'>
+        # broker_name = self.request.POST['broker']  # should be "SCIMMA"
+        # broker_class = get_service_class(broker_name)  # should be <class 'tom_scimma.scimma.SCIMMABroker'>
         alerts = [int(id) for id in request.POST.getlist('alerts', [])]
-
-        print(f'*** CreateFromAlertView.post query_id: {query_id}')
-        print(f'*** CreateFromAlertView.post broker_name: {broker_name}')
-        print(f'*** CreateFromAlertView.post broker_class: {broker_class}')
-        print(f'*** CreateFromAlertView.post alert_ids: {alerts}')
 
         errors = []
         # if the user didn't select an alert; warn and re-direct back
@@ -107,14 +56,13 @@ class CreateEventFromSCiMMAAlertView(View):
             reverse_url: str = reverse('tom_alerts:run', kwargs={'pk': query_id})
             return redirect(reverse_url)
 
-        # try to extract EventID from Alert and use it to create a Superevent
+        # try to extract EventID from Alert and use it to create a NoneLocalizedEvent
         for alert_id in alerts:
             cached_alert = json.loads(cache.get(f'alert_{alert_id}'))  # cached by tom_alerts.views.py::RunQueryView
             # early return: alert not in cache
             if not cached_alert:
                 messages.error(request, 'Could not create event(s). Try re-running the query to refresh the cache.')
                 return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
-            print(f'*** CreateFromAlertView.post cached_alert: {cached_alert}: {type(cached_alert)}')
 
             # early return: alert not LVC/LVC COUNTERPART NOTICE
             if cached_alert.get('topic', '') != 'lvc.lvc-counterpart':
@@ -132,32 +80,34 @@ class CreateEventFromSCiMMAAlertView(View):
                                 'event_trig_num not found in alert message.'))
                 return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
 
-            superevent, created = Superevent.objects.get_or_create(superevent_id=event_trig_num)
+            nonlocalizedevent, created = NonLocalizedEvent.objects.get_or_create(event_id=event_trig_num)
             if not created:
-                # the superevent already existed
+                # the nonlocalizedevent already existed
                 messages.warning(request, f'Event {event_trig_num} already exists.')
-                errors.append(superevent.superevent_id)
+                errors.append(nonlocalizedevent.event_id)
 
         if len(alerts) == len(errors):
-            # zero superevents created
+            # zero nonlocalizedevents created
             return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
         elif len(alerts) == 1:
-            # one superevent created
-            return redirect(reverse('nonlocalizedevents:detail', kwargs={'pk': superevent.id}))
+            # one nonlocalizedevent created
+            return redirect(reverse('nonlocalizedevents:detail', kwargs={'pk': nonlocalizedevent.pk}))
         else:
-            # multipe superevents created
+            # multipe nonlocalizedevent created
             return redirect(reverse('nonlocalizedevents:index'))
 
 # Django Rest Framework Views
 
 
-class NonlocalizedEventViewSet(viewsets.ModelViewSet):
+class NonLocalizedEventViewSet(viewsets.ModelViewSet):
     """
-    DRF API endpoint that allows Superevents to be viewed or edited.
+    DRF API endpoint that allows NonLocalizedEvents to be viewed or edited.
     """
-    queryset = Superevent.objects.all()
-    serializer_class = SupereventSerializer
-    permission_classes = []
+    queryset = NonLocalizedEvent.objects.all()
+    serializer_class = NonLocalizedEventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['event_id', 'event_type']
 
 
 class EventCandidateViewSet(viewsets.ModelViewSet):
@@ -168,7 +118,9 @@ class EventCandidateViewSet(viewsets.ModelViewSet):
     """
     queryset = EventCandidate.objects.all()
     serializer_class = EventCandidateSerializer
-    permission_classes = []  # TODO: re-implement auth permissions
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['nonlocalizedevent', 'viable', 'priority']
 
     def get_serializer(self, *args, **kwargs):
         # In order to ensure the list_serializer_class is used for bulk_create, we check that the POST data is a list
@@ -203,3 +155,44 @@ class EventLocalizationViewSet(viewsets.ModelViewSet):
     queryset = EventLocalization.objects.all()
     serializer_class = EventLocalizationSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class SupereventPkView(LoginRequiredMixin, TemplateView):
+    template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
+
+    def get_context_data(self, **kwargs: dict) -> dict:
+        context = super().get_context_data(**kwargs)
+        superevent = NonLocalizedEvent.objects.get(pk=kwargs['pk'])
+        sequences = list(superevent.sequences.order_by('sequence_id').values(
+            'sequence_id', 'event_subtype', 'created', 'pk'))
+        for sequence in sequences:
+            # Set the created date as a string so it can be in json format
+            sequence['created'] = sequence['created'].isoformat()
+        context['superevent_pk'] = kwargs['pk']
+        context['superevent_id'] = superevent.event_id
+        context['sequences'] = json.dumps(sequences)
+        context['tom_api_url'] = settings.TOM_API_URL
+        context['hermes_api_url'] = settings.HERMES_API_URL
+        return context
+
+
+class SupereventIdView(LoginRequiredMixin, TemplateView):
+    template_name = 'tom_nonlocalizedevents/superevent_vue_app.html'
+
+    def get_context_data(self, **kwargs: dict) -> dict:
+        context = super().get_context_data(**kwargs)
+        try:
+            superevent = NonLocalizedEvent.objects.get(event_id=kwargs['event_id'])
+            sequences = list(superevent.sequences.order_by('sequence_id').values(
+                'sequence_id', 'event_subtype', 'created', 'pk'))
+            for sequence in sequences:
+                # Set the created date as a string so it can be in json format
+                sequence['created'] = sequence['created'].isoformat()
+            context['superevent_id'] = kwargs['event_id']
+            context['superevent_pk'] = superevent.pk
+            context['sequences'] = json.dumps(sequences)
+            context['tom_api_url'] = settings.TOM_API_URL
+            context['hermes_api_url'] = settings.HERMES_API_URL
+            return context
+        except NonLocalizedEvent.DoesNotExist:
+            raise Http404
