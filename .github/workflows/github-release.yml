@@ -5,6 +5,8 @@ on:
     tags:
       - "*.*.*"
       - "*.*.*-alpha.*"
+      - "*.*.*-beta.*"
+      - "*.*.*-rc.*"
 
 jobs:
   run_tests:
