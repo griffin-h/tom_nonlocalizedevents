@@ -28,5 +28,5 @@ def cb_post_save_event_localization(sender, instance, created, **kwargs):
     # EventCandidate associated with that nonlocalizedevent for the new localization
     if created:
         transaction.on_commit(
-            partial(update_all_credible_region_percents_for_candidates, event_localization=instance)
+            partial(update_all_credible_region_percents_for_candidates, eventlocalization=instance)
         )
