@@ -1,5 +1,8 @@
+from functools import partial
+
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.db import transaction
 
 from tom_nonlocalizedevents.models import EventCandidate, EventLocalization
 from tom_nonlocalizedevents.healpix_utils import update_all_credible_region_percents_for_candidates
@@ -24,4 +27,6 @@ def cb_post_save_event_localization(sender, instance, created, **kwargs):
     # Anytime a new EventLocalization is created, update the smallest probability credible region for each
     # EventCandidate associated with that nonlocalizedevent for the new localization
     if created:
-        update_all_credible_region_percents_for_candidates(instance)
+        transaction.on_commit(
+            partial(update_all_credible_region_percents_for_candidates, event_localization=instance)
+        )
