@@ -61,12 +61,18 @@ def handle_message(message):
         if nle_created:
             logger.info(f"Ingested a new GW event with id {fields['TRIGGER_NUM']} from alertstream")
         # Next attempt to ingest and build the localization of the event
-        localization = create_localization_for_multiorder_fits(
-            nonlocalizedevent=nonlocalizedevent,
-            multiorder_fits_url=get_moc_url_from_skymap_fits_url(fields['SKYMAP_FITS_URL'])
-        )
+        try:
+            localization = create_localization_for_multiorder_fits(
+                nonlocalizedevent=nonlocalizedevent,
+                multiorder_fits_url=get_moc_url_from_skymap_fits_url(fields['SKYMAP_FITS_URL'])
+            )
+        except Exception as e:
+            localization = None
+            logger.error(f'Could not create EventLocalization for messsage: {fields}. Exception: {e}')
+            logger.error(traceback.format_exc())
+
         # Now ingest the sequence for that event
-        EventSequence.objects.update_or_create(
+        event_sequence, es_created = EventSequence.objects.update_or_create(
             nonlocalizedevent=nonlocalizedevent,
             localization=localization,
             sequence_id=fields['SEQUENCE_NUM'],
@@ -74,6 +80,10 @@ def handle_message(message):
                 'event_subtype': fields['NOTICE_TYPE']
             }
         )
+        if es_created and localization is None:
+            warning_msg = (f'{"Creating" if es_created else "Updating"} EventSequence without EventLocalization:'
+                           f'{event_sequence} for NonLocalizedEvent: {nonlocalizedevent}')
+            logger.warning(warning_msg)
 
 
 def handle_retraction(message):
