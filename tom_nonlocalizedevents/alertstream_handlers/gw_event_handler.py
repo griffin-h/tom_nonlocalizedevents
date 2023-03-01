@@ -1,10 +1,12 @@
 ''' This class defines a message handler for a tom_alertstreams connection to GW events
 
 '''
-from tom_nonlocalizedevents.models import NonLocalizedEvent, EventSequence
-from tom_nonlocalizedevents.healpix_utils import create_localization_for_multiorder_fits
 import logging
 import os
+import traceback
+
+from tom_nonlocalizedevents.models import NonLocalizedEvent, EventSequence
+from tom_nonlocalizedevents.healpix_utils import create_localization_for_multiorder_fits
 
 logger = logging.getLogger(__name__)
 
