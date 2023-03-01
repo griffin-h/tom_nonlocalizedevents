@@ -54,11 +54,11 @@ def handle_message(message):
         bytes_message = message
     fields = extract_fields(bytes_message.decode('utf-8'), EXPECTED_FIELDS)
     if fields:
-        nonlocalizedevent, created = NonLocalizedEvent.objects.get_or_create(
+        nonlocalizedevent, nle_created = NonLocalizedEvent.objects.get_or_create(
             event_id=fields['TRIGGER_NUM'],
             event_type=NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE,
         )
-        if created:
+        if nle_created:
             logger.info(f"Ingested a new GW event with id {fields['TRIGGER_NUM']} from alertstream")
         # Next attempt to ingest and build the localization of the event
         localization = create_localization_for_multiorder_fits(
