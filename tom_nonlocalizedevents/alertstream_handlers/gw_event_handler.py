@@ -1,10 +1,12 @@
 ''' This class defines a message handler for a tom_alertstreams connection to GW events
 
 '''
-from tom_nonlocalizedevents.models import NonLocalizedEvent, EventSequence
-from tom_nonlocalizedevents.healpix_utils import create_localization_for_multiorder_fits
 import logging
 import os
+import traceback
+
+from tom_nonlocalizedevents.models import NonLocalizedEvent, EventSequence
+from tom_nonlocalizedevents.healpix_utils import create_localization_for_multiorder_fits
 
 logger = logging.getLogger(__name__)
 
@@ -52,19 +54,25 @@ def handle_message(message):
         bytes_message = message
     fields = extract_fields(bytes_message.decode('utf-8'), EXPECTED_FIELDS)
     if fields:
-        nonlocalizedevent, created = NonLocalizedEvent.objects.get_or_create(
+        nonlocalizedevent, nle_created = NonLocalizedEvent.objects.get_or_create(
             event_id=fields['TRIGGER_NUM'],
             event_type=NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE,
         )
-        if created:
+        if nle_created:
             logger.info(f"Ingested a new GW event with id {fields['TRIGGER_NUM']} from alertstream")
         # Next attempt to ingest and build the localization of the event
-        localization = create_localization_for_multiorder_fits(
-            nonlocalizedevent=nonlocalizedevent,
-            multiorder_fits_url=get_moc_url_from_skymap_fits_url(fields['SKYMAP_FITS_URL'])
-        )
+        try:
+            localization = create_localization_for_multiorder_fits(
+                nonlocalizedevent=nonlocalizedevent,
+                multiorder_fits_url=get_moc_url_from_skymap_fits_url(fields['SKYMAP_FITS_URL'])
+            )
+        except Exception as e:
+            localization = None
+            logger.error(f'Could not create EventLocalization for messsage: {fields}. Exception: {e}')
+            logger.error(traceback.format_exc())
+
         # Now ingest the sequence for that event
-        EventSequence.objects.update_or_create(
+        event_sequence, es_created = EventSequence.objects.update_or_create(
             nonlocalizedevent=nonlocalizedevent,
             localization=localization,
             sequence_id=fields['SEQUENCE_NUM'],
@@ -72,6 +80,10 @@ def handle_message(message):
                 'event_subtype': fields['NOTICE_TYPE']
             }
         )
+        if es_created and localization is None:
+            warning_msg = (f'{"Creating" if es_created else "Updating"} EventSequence without EventLocalization:'
+                           f'{event_sequence} for NonLocalizedEvent: {nonlocalizedevent}')
+            logger.warning(warning_msg)
 
 
 def handle_retraction(message):
