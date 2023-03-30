@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import BigIntegerRangeField
 from django.contrib.postgres.indexes import SpGistIndex
+from django.conf import settings
 
 from tom_targets.models import Target
 
@@ -8,6 +9,7 @@ import numpy as np
 from psycopg2.extensions import register_adapter, AsIs
 from healpix_alchemy.constants import HPX
 from astropy.coordinates import SkyCoord
+from urllib.parse import urljoin
 import logging
 
 
@@ -93,6 +95,14 @@ class NonLocalizedEvent(models.Model):
         """
         # TODO: add check that superevent_type is GRAVITATIONAL_WAVE
         return f"http://treasuremap.space/alerts?graceids={self.event_id}"
+
+    @property
+    def hermes_url(self):
+        """Construct and return the hermes details page URL for this nonlocalizedevent
+
+        for example: http://hermes.lco.global/nonlocalizedevent/S200316bj/
+        """
+        return urljoin(settings.HERMES_API_URL, f'/nonlocalizedevent/{self.event_id}/')
 
     def __str__(self):
         return f"{self.event_id}"
