@@ -14,7 +14,7 @@ plugins.push(createPersistedState({
 let store = new Vuex.Store({
     state: {
         tomApiBaseUrl: 'http://localhost:8000',
-        hermesApiBaseUrl: 'http://hermes-dev.lco.gtn',
+        hermesApiBaseUrl: 'https://hermes.lco.global',
         tomAxiosConfig: {},
         hermesAxiosConfig: {}
     },
