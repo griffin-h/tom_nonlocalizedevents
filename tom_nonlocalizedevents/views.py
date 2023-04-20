@@ -33,7 +33,7 @@ class NonLocalizedEventListView(LoginRequiredMixin, ListView):
 
 # from the tom_alerts query_result.html
 
-class CreateEventFromSCiMMAAlertView(View):
+class CreateEventFromHermesAlertView(View):
     """
     Creates the models.NonLocalizedEvent instance and redirect to NonLocalizedEventDetailView
     """
