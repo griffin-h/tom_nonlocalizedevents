@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.contrib import messages
 from django.core.cache import cache
@@ -16,6 +17,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
 from tom_nonlocalizedevents.serializers import (EventCandidateSerializer, EventLocalizationSerializer,
                                                 NonLocalizedEventSerializer)
+from tom_nonlocalizedevents.alertstream_handlers import gw_event_handler
+
+
+logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
 
 
 class NonLocalizedEventListView(LoginRequiredMixin, ListView):
@@ -37,67 +43,47 @@ class CreateEventFromHermesAlertView(View):
     """
     Creates the models.NonLocalizedEvent instance and redirect to NonLocalizedEventDetailView
     """
-    pass
 
     def post(self, request, *args, **kwargs):
         """
         """
         # the request.POST is a QueryDict object;
-        # for SCiMMA, alerts: list items are PKs to skip.dev.hop.scimma.org/api/alerts/PK/
         query_id = self.request.POST['query_id']
-        # broker_name = self.request.POST['broker']  # should be "SCIMMA"
-        # broker_class = get_service_class(broker_name)  # should be <class 'tom_scimma.scimma.SCIMMABroker'>
-        alerts = [int(id) for id in request.POST.getlist('alerts', [])]
 
-        errors = []
+        # events is a list[str] of NonLocalizedEvent event_id's: (e.g. 'MS230417a')
+        # (i.e the selected events from the query result form)
+        events = request.POST.getlist('events', [])
+
         # if the user didn't select an alert; warn and re-direct back
-        if not alerts:
-            messages.warning(request, 'Please select at least one alert from which to create an event.')
+        if not events:
+            messages.warning(request, 'Please select at least one Event to create.')
             reverse_url: str = reverse('tom_alerts:run', kwargs={'pk': query_id})
             return redirect(reverse_url)
 
-        # try to extract EventID from Alert and use it to create a NoneLocalizedEvent
-        for alert_id in alerts:
-            cached_alert = json.loads(cache.get(f'alert_{alert_id}'))  # cached by tom_alerts.views.py::RunQueryView
+        # Create NonLocalizedEvents for each of the selected events.
+        for event_id in events:
+            logger.debug(f'Creating event {event_id}...')
+            # extract the Hermes event from the cache
+            # (it was cached by tom_alerts.views.py::RunQueryView)
+            cached_event = json.loads(cache.get(f'alert_{event_id}'))
+
             # early return: alert not in cache
-            if not cached_alert:
-                messages.error(request, 'Could not create event(s). Try re-running the query to refresh the cache.')
+            if not cached_event:
+                messages.error(request, 'Could not createn event(s). Try re-running the query to refresh the cache.')
                 return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
 
-            # early return: alert not LVC/LVC COUNTERPART NOTICE
-            if cached_alert.get('topic', '') != 'lvc.lvc-counterpart':
-                messages.error(request,
-                               ('Only Alerts from the lvc.lvc-counterpart topic have '
-                                'parsed event_trig_num required for Event origination. '
-                                'Please select an appropriate alert.'))
-                return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
+            # the NonLocalizedEvent is created by handling all the messages from
+            # the event sequence as if they were ingested
+            for sequenced_message in cached_event['sequences']:
+                message = sequenced_message['message']['message_text']
+                gw_event_handler.handle_message(message.encode('utf-8'))
 
-            # early return: event_trig_num not found in parsed alert message
-            event_trig_num = cached_alert['message'].get('event_trig_num', None)
-            if event_trig_num is None:
-                messages.error(request,
-                               (f'Could not create event for alert: {alert_id}. '
-                                'event_trig_num not found in alert message.'))
-                return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
+        return redirect(reverse('nonlocalizedevents:index'))
 
-            nonlocalizedevent, created = NonLocalizedEvent.objects.get_or_create(event_id=event_trig_num)
-            if not created:
-                # the nonlocalizedevent already existed
-                messages.warning(request, f'Event {event_trig_num} already exists.')
-                errors.append(nonlocalizedevent.event_id)
 
-        if len(alerts) == len(errors):
-            # zero nonlocalizedevents created
-            return redirect(reverse('tom_alerts:run', kwargs={'pk': query_id}))
-        elif len(alerts) == 1:
-            # one nonlocalizedevent created
-            return redirect(reverse('nonlocalizedevents:detail', kwargs={'pk': nonlocalizedevent.pk}))
-        else:
-            # multipe nonlocalizedevent created
-            return redirect(reverse('nonlocalizedevents:index'))
-
+#
 # Django Rest Framework Views
-
+#
 
 class NonLocalizedEventViewSet(viewsets.ModelViewSet):
     """
