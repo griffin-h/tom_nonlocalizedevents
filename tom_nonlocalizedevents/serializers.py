@@ -112,6 +112,7 @@ class EventLocalizationSerializer(serializers.HyperlinkedModelSerializer):
 
 class ExternalCoincidence(serializers.HyperlinkedModelSerializer):
     localization = EventLocalizationSerializer(read_only=True)
+
     class Meta:
         model = ExternalCoincidence
         fields = ['details', 'localization']
@@ -123,7 +124,8 @@ class EventSequenceSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = EventSequence
-        fields = ['id', 'created', 'modified', 'sequence_id', 'event_subtype', 'details', 'ingestor_source', 'localization', 'external_coincidence']
+        fields = ['id', 'created', 'modified', 'sequence_id', 'event_subtype',
+                  'details', 'ingestor_source', 'localization', 'external_coincidence']
 
 
 class NonLocalizedEventSerializer(serializers.HyperlinkedModelSerializer):

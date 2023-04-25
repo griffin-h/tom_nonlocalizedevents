@@ -50,7 +50,9 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
         skymap_bytes = alert['event'].pop('skymap')
         if skymap_bytes:
             try:
-                localization = create_localization_for_skymap(nonlocalizedevent=nonlocalizedevent, skymap_bytes=skymap_bytes)
+                localization = create_localization_for_skymap(
+                    nonlocalizedevent=nonlocalizedevent, skymap_bytes=skymap_bytes
+                )
             except Exception as e:
                 localization = None
                 logger.error(f'Could not create EventLocalization for event: {alert["superevent_id"]}. Exception: {e}')
@@ -61,14 +63,18 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
         combined_skymap_bytes = alert['external_coinc'].pop('combined_skymap')
         if combined_skymap_bytes:
             try:
-                combined_localization = create_localization_for_skymap(nonlocalizedevent=nonlocalizedevent, skymap_bytes=combined_skymap_bytes, is_combined=True)
+                combined_localization = create_localization_for_skymap(
+                    nonlocalizedevent=nonlocalizedevent, skymap_bytes=combined_skymap_bytes, is_combined=True
+                )
                 external_coincidence, _ = ExternalCoincidence.objects.get_or_create(
                     localization=combined_localization,
                     defaults={'details': alert.get('external_coinc')}
                 )
             except Exception as e:
                 external_coincidence = None
-                logger.error(f'Could not create combined EventLocalization for event: {alert["superevent_id"]}. Exception: {e}')
+                logger.error(
+                    f'Could not create combined EventLocalization for event: {alert["superevent_id"]}. Exception: {e}'
+                )
                 logger.error(traceback.format_exc())
 
     logger.warning(f"Storing igwn alert: {alert}")
@@ -83,10 +89,12 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
         details=alert.get('event'),
         defaults={
             'event_subtype': alert.get('alert_type'),
-            'ingestor_source': 'Hop'
+            'ingestor_source': 'hop'
         }
     )
     if es_created and localization is None:
-        warning_msg = (f'{"Creating" if es_created else "Updating"} EventSequence without EventLocalization:'
-                        f'{event_sequence} for NonLocalizedEvent: {nonlocalizedevent}')
+        warning_msg = (
+            f'{"Creating" if es_created else "Updating"} EventSequence without EventLocalization:'
+            f'{event_sequence} for NonLocalizedEvent: {nonlocalizedevent}'
+        )
         logger.warning(warning_msg)

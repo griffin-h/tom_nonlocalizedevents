@@ -2,8 +2,8 @@
     using healpix_alchemy and model mappings with sql_alchemy queries.
 '''
 from astropy.table import Table
-from astropy.io import fits
-from tom_nonlocalizedevents.models import NonLocalizedEvent, EventCandidate, SkymapTile, EventLocalization, CredibleRegion
+from tom_nonlocalizedevents.models import (NonLocalizedEvent, EventCandidate, SkymapTile,
+                                           EventLocalization, CredibleRegion)
 from django.db import transaction
 from django.conf import settings
 from healpix_alchemy.constants import HPX, LEVEL
@@ -95,13 +95,14 @@ def get_confidence_regions(skymap: Table):
 
 def get_skymap_version(nle: NonLocalizedEvent, skymap_hash: uuid, is_combined: bool) -> int:
     """ This method gets the most recent previous sequence of this superevent and checks if the skymap has changed.
-        It returns the 'version' of the skymap, which can be used to retrieve the proper file and image files from gracedb.
-        This is a hack because IGWN GWAlerts no longer have any way of knowing which skymap version they reference.
+        It returns the 'version' of the skymap, which can be used to retrieve the proper file and image files from
+        gracedb. This is a hack because IGWN GWAlerts no longer have any way of knowing which skymap version they
+        reference.
     """
     try:
         for sequence in nle.sequences.all().reverse():
             if (is_combined and sequence.external_coincidence and sequence.external_coincidence.localization
-                and sequence.external_coincidence.localization.skymap_hash != skymap_hash):
+                    and sequence.external_coincidence.localization.skymap_hash != skymap_hash):
                 return sequence.external_coincidence.localization.skymap_version + 1
             elif (not is_combined) and sequence.localization and sequence.localization.skymap_hash != skymap_hash:
                 return sequence.localization.skymap_version + 1
@@ -110,7 +111,8 @@ def get_skymap_version(nle: NonLocalizedEvent, skymap_hash: uuid, is_combined: b
         return 0  # The nonlocalizedevent doesnt exist in our system yet, so this must be the first skymap version
 
 
-def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_bytes: bytes, skymap_url: str = '', is_combined=False):
+def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_bytes: bytes, skymap_url: str = '',
+                                   is_combined=False):
     """ Create localization from skymap bytes and related fields """
     logger.info(f"Creating localization for {nonlocalizedevent.event_id} with skymap {skymap_url}")
     skymap_hash = hashlib.md5(skymap_bytes).hexdigest()
@@ -125,11 +127,18 @@ def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_
         skymap_version = get_skymap_version(nonlocalizedevent, skymap_hash=skymap_uuid, is_combined=is_combined)
         if not skymap_url:
             if is_combined:
-                skymap_url = f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}/files/combined-ext.multiorder.fits,{skymap_version}"
+                skymap_url = (
+                    f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}"
+                    f"/files/combined-ext.multiorder.fits,{skymap_version}"
+                )
             else:
-                skymap_url = f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}/files/bayestar.multiorder.fits,{skymap_version}"
+                skymap_url = (
+                    f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}"
+                    f"/files/bayestar.multiorder.fits,{skymap_version}"
+                )
         area_50, area_90 = get_confidence_regions(skymap)
-        row_dist_mean, row_dist_std, _ = distance.parameters_to_moments(skymap['DISTMU'], skymap['DISTSIGMA'])
+        row_dist_mean, row_dist_std, _ = distance.parameters_to_moments(
+            skymap['DISTMU'], skymap['DISTSIGMA'])
         with transaction.atomic():
             localization = EventLocalization.objects.create(
                 nonlocalizedevent=nonlocalizedevent,

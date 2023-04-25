@@ -121,7 +121,10 @@ class EventLocalization(models.Model):
         default='',
         help_text='The URL to a file containing skymap file for used to generate this localization.'
     )
-    skymap_version = models.PositiveSmallIntegerField(null=True, blank=True, help_text='The version of the skymap for this localization')
+    skymap_version = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text='The version of the skymap for this localization'
+    )
     skymap_hash = models.UUIDField(
         null=True, blank=True,
         help_text='A UUID from an md5 hash of the raw skymap file contents, used to detect when it has changed'
@@ -145,20 +148,35 @@ class EventLocalization(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['nonlocalizedevent', 'skymap_hash'], name='unique_skymap_per_nonlocalizedevent')
+            models.UniqueConstraint(
+                fields=['nonlocalizedevent', 'skymap_hash'],
+                name='unique_skymap_per_nonlocalizedevent'
+            )
         ]
 
 
 class ExternalCoincidence(models.Model):
-    details = models.JSONField(null=True, blank=True, help_text='Contains the payload of the external coincidence section of the alert')
-    localization = models.ForeignKey(EventLocalization, related_name='external_coincidences', null=True, on_delete=models.SET_NULL)
+    details = models.JSONField(
+        null=True, blank=True,
+        help_text='Contains the payload of the external coincidence section of the alert'
+    )
+    localization = models.ForeignKey(
+        EventLocalization, related_name='external_coincidences',
+        null=True, on_delete=models.SET_NULL
+    )
 
 
 class EventSequence(models.Model):
     nonlocalizedevent = models.ForeignKey(NonLocalizedEvent, related_name='sequences', on_delete=models.CASCADE)
     localization = models.ForeignKey(EventLocalization, related_name='sequences', null=True, on_delete=models.SET_NULL)
-    external_coincidence = models.ForeignKey(ExternalCoincidence, related_name='sequences', null=True, blank=True, on_delete=models.SET_NULL)
-    details = models.JSONField(null=True, blank=True, help_text='Contains the payload of the event section of the alert')
+    external_coincidence = models.ForeignKey(
+        ExternalCoincidence, related_name='sequences',
+        null=True, blank=True, on_delete=models.SET_NULL
+    )
+    details = models.JSONField(
+        null=True, blank=True,
+        help_text='Contains the payload of the event section of the alert'
+    )
     sequence_id = models.PositiveIntegerField(
         default=1,
         help_text='The version / update number of this event. I.E. the SEQUENCE_NUM for a GW event.'

@@ -79,7 +79,9 @@ def handle_message(message):
             )
         except Exception as e:
             localization = None
-            logger.error(f"Failed to retrieve and process localization from skymap file at {skymap_url}. Exception: {e}")
+            logger.error(
+                f"Failed to retrieve and process localization from skymap file at {skymap_url}. Exception: {e}"
+            )
             logger.error(traceback.format_exc())
 
         # Now ingest the sequence for that event
