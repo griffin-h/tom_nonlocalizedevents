@@ -3,7 +3,7 @@ from tom_targets.models import Target
 from tom_targets.serializers import TargetSerializer
 
 from tom_nonlocalizedevents.models import (CredibleRegion, EventCandidate, EventLocalization,
-                                           EventSequence, NonLocalizedEvent)
+                                           EventSequence, NonLocalizedEvent, ExternalCoincidence)
 
 # from healpix_alchemy.constants import PIXEL_AREA, HPX
 # from astropy.coordinates import SkyCoord
@@ -107,19 +107,23 @@ class EventCandidateSerializer(serializers.ModelSerializer):
 class EventLocalizationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = EventLocalization
-        fields = ['id', 'date', 'skymap_moc_file_url', 'distance_mean', 'distance_std']
+        fields = ['id', 'date', 'skymap_url', 'skymap_version', 'area_50', 'area_90', 'distance_mean', 'distance_std']
+
+
+class ExternalCoincidence(serializers.HyperlinkedModelSerializer):
+    localization = EventLocalizationSerializer(read_only=True)
+    class Meta:
+        model = ExternalCoincidence
+        fields = ['details', 'localization']
 
 
 class EventSequenceSerializer(serializers.HyperlinkedModelSerializer):
-    localization = serializers.PrimaryKeyRelatedField(read_only=True)
-    skymap_fits_url = serializers.SerializerMethodField(read_only=True)
+    localization = EventLocalizationSerializer(read_only=True)
+    external_coincidence = ExternalCoincidence(read_only=True)
 
     class Meta:
         model = EventSequence
-        fields = ['id', 'sequence_id', 'event_subtype', 'localization', 'skymap_fits_url']
-
-    def get_skymap_fits_url(self, instance):
-        return instance.localization.skymap_moc_file_url
+        fields = ['id', 'created', 'modified', 'sequence_id', 'event_subtype', 'details', 'ingestor_source', 'localization', 'external_coincidence']
 
 
 class NonLocalizedEventSerializer(serializers.HyperlinkedModelSerializer):

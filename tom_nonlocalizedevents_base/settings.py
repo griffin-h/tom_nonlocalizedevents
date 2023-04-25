@@ -284,6 +284,8 @@ HARVESTERS = {
     }
 }
 
+SAVE_TEST_ALERTS = os.getenv('SAVE_TEST_ALERTS', True)
+
 # Define extra target fields here. Types can be any of "number", "string", "boolean" or "datetime"
 # See https://tomtoolkit.github.io/docs/target_fields for documentation on this feature
 # For example:
