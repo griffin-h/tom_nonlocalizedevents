@@ -21,7 +21,6 @@ from tom_nonlocalizedevents.alertstream_handlers import gw_event_handler
 
 
 logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
 
 
 class NonLocalizedEventListView(LoginRequiredMixin, ListView):
