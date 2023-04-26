@@ -126,11 +126,24 @@ export default {
     };
   },
   computed: {
+    hasExternalCoincidence() {
+      return !_.isNil(this.sequence.external_coincidence) && !_.isEmpty(this.sequence.external_coincidence);
+    },
     skymapVersion() {
-      return _.get(this.sequence, 'localization.skymap_version', undefined);
+      if (this.hasExternalCoincidence){
+        return _.get(this.sequence, 'external_coincidence.localization.skymap_version', undefined);
+      }
+      else{
+        return _.get(this.sequence, 'localization.skymap_version', undefined);
+      }
     },
     skymapUrl() {
-      return _.get(this.sequence, 'localization.skymap_url', undefined);
+      if (this.hasExternalCoincidence){
+        return _.get(this.sequence, 'external_coincidence.localization.skymap_url', undefined);
+      }
+      else{
+        return _.get(this.sequence, 'localization.skymap_url', undefined);
+      }
     },
     viableCandidates() {
       return this.eventCandidates.filter((item) => {
@@ -149,7 +162,6 @@ export default {
 
   methods: {
     processEventCandidates() {
-      console.log(this.candidates);
       this.eventCandidates = [];
       this.candidates.forEach((candidate) => {
         if(this.sequence.sequence_id.toString() in candidate['credible_regions']) {
@@ -192,11 +204,19 @@ export default {
       // Construct URL with the superevent id and base skymap fits moc url
       // These files could eithe be a bayestar or LALInference file
       // for example: https://gracedb.ligo.org/api/superevents/S190426c/files/bayestar.volume.png"
-      let image_base = '.png';
+      let image_base = '';
       if (volume_image) {
-        image_base = '.volume.png';
+        image_base = 'bayestar.volume.png';
       }
-      let url = 'https://gracedb.ligo.org/api/superevents/' + this.supereventId + '/files/bayestar' + image_base;
+      else {
+        if (this.hasExternalCoincidence) {
+          image_base = 'combined-ext.png';
+        }
+        else {
+          image_base = 'bayestar.png';
+        }
+      }
+      let url = 'https://gracedb.ligo.org/api/superevents/' + this.supereventId + '/files/' + image_base;
       if (this.skymapVersion !== undefined) {
         url = url + ',' + this.skymapVersion;
       }

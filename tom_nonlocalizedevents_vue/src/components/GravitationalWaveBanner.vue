@@ -13,8 +13,11 @@
           <h3><span>FAR: {{ safeGetEventAttributes("details.far", -1, true).toPrecision(3) }}</span></h3>
         </b-col>
         <b-col>
-          <h3><span>90%: {{ parseFloat(safeGetEventAttributes("localization.area_90")).toPrecision(4) }}</span>
+          <h3><span>90%: {{ parseFloat(safeGetEventAttributes(this.area90Path)).toPrecision(4) }}</span>
           </h3>
+        </b-col>
+        <b-col v-if="hasExternalCoincidence">
+          <h3><span>GCN #: {{ safeGetEventAttributes("external_coincidence.details.gcn_notice_id", -1) }}</span></h3>
         </b-col>
       </b-row>
       <b-row>
@@ -28,8 +31,11 @@
           <h3><span>BBH: {{ safeGetEventAttributes(this.bbhPath, -1, true).toPrecision(3) }}</span></h3>
         </b-col>
         <b-col>
-          <h3><span>50%: {{ parseFloat(safeGetEventAttributes("localization.area_50")).toPrecision(4) }}</span>
+          <h3><span>50%: {{ parseFloat(safeGetEventAttributes(this.area50Path)).toPrecision(4) }}</span>
           </h3>
+        </b-col>
+        <b-col v-if="hasExternalCoincidence">
+          <h3><span>Observatory: {{ safeGetEventAttributes("external_coincidence.details.observatory", '') }}</span></h3>
         </b-col>
       </b-row>
     </b-jumbotron>
@@ -49,6 +55,9 @@ export default {
     supereventId: String
   },
   computed: {
+    hasExternalCoincidence() {
+      return !_.isNil(this.sequence.external_coincidence) && !_.isEmpty(this.sequence.external_coincidence);
+    },
     nsbhPath() {
       if (this.sequence.ingestor_source.toLowerCase() === 'gcn') {
         return "details.prob_nsbh";
@@ -79,6 +88,22 @@ export default {
       }
       else {
         return "details.classification.Terrestrial";
+      }
+    },
+    area50Path() {
+      if (this.hasExternalCoincidence) {
+        return "external_coincidence.localization.area_50";
+      }
+      else{
+        return "localization.area_50";
+      }
+    },
+    area90Path() {
+      if (this.hasExternalCoincidence) {
+        return "external_coincidence.localization.area_90";
+      }
+      else{
+        return "localization.area_90";
       }
     }
   },
