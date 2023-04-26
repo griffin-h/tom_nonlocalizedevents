@@ -86,12 +86,11 @@ class EventCandidateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def get_credible_regions(self, instance):
-        sequence_id_to_credible_region_percent = {}
+        localization_id_to_credible_region_percent = {}
         credibleregions = instance.credibleregions.all()
         for cr in credibleregions:
-            for sequence in cr.localization.sequences.all():
-                sequence_id_to_credible_region_percent[sequence.sequence_id] = cr.smallest_percent
-        return sequence_id_to_credible_region_percent
+            localization_id_to_credible_region_percent[cr.localization.id] = cr.smallest_percent
+        return localization_id_to_credible_region_percent
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

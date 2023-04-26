@@ -164,11 +164,21 @@ export default {
     processEventCandidates() {
       this.eventCandidates = [];
       this.candidates.forEach((candidate) => {
-        if(this.sequence.sequence_id.toString() in candidate['credible_regions']) {
-          candidate['credible_region'] = candidate['credible_regions'][this.sequence.sequence_id.toString()];
+        if (this.hasExternalCoincidence) {
+          if (this.sequence.external_coincidence.localization.id.toString() in candidate['credible_regions']) {
+            candidate['credible_region'] = candidate['credible_regions'][this.sequence.external_coincidence.localization.id.toString()];
+          }
+          else{
+            candidate['credible_region'] = 100;
+          }
         }
         else {
-          candidate['credible_region'] = 100;
+          if(this.sequence.localization.id.toString() in candidate['credible_regions']) {
+            candidate['credible_region'] = candidate['credible_regions'][this.sequence.localization.id.toString()];
+          }
+          else {
+            candidate['credible_region'] = 100;
+          }
         }
         this.eventCandidates.push(candidate);
       });
