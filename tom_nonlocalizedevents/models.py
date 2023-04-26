@@ -117,9 +117,17 @@ class EventLocalization(models.Model):
     date = models.DateTimeField(
         help_text='The datestamp of this localizations creation.'
     )
-    skymap_moc_file_url = models.URLField(
+    skymap_url = models.URLField(
         default='',
-        help_text='The URL to a file containing skymap MOC file for the event sequence. Used to generate localization.'
+        help_text='The URL to a file containing skymap file for used to generate this localization.'
+    )
+    skymap_version = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text='The version of the skymap for this localization'
+    )
+    skymap_hash = models.UUIDField(
+        null=True, blank=True,
+        help_text='A UUID from an md5 hash of the raw skymap file contents, used to detect when it has changed'
     )
     distance_mean = models.FloatField(
         default=0,
@@ -129,16 +137,46 @@ class EventLocalization(models.Model):
         default=0,
         help_text='The posterior standard deviation of the distance in Mpc.'
     )
+    area_50 = models.FloatField(
+        null=True, blank=True,
+        help_text='The 50 percent confidence region area'
+    )
+    area_90 = models.FloatField(
+        null=True, blank=True,
+        help_text='The 90 percent confidence region area'
+    )
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['nonlocalizedevent', 'date'], name='unique_date_per_nonlocalizedevent')
+            models.UniqueConstraint(
+                fields=['nonlocalizedevent', 'skymap_hash'],
+                name='unique_skymap_per_nonlocalizedevent'
+            )
         ]
+
+
+class ExternalCoincidence(models.Model):
+    details = models.JSONField(
+        null=True, blank=True,
+        help_text='Contains the payload of the external coincidence section of the alert'
+    )
+    localization = models.ForeignKey(
+        EventLocalization, related_name='external_coincidences',
+        null=True, on_delete=models.SET_NULL
+    )
 
 
 class EventSequence(models.Model):
     nonlocalizedevent = models.ForeignKey(NonLocalizedEvent, related_name='sequences', on_delete=models.CASCADE)
     localization = models.ForeignKey(EventLocalization, related_name='sequences', null=True, on_delete=models.SET_NULL)
+    external_coincidence = models.ForeignKey(
+        ExternalCoincidence, related_name='sequences',
+        null=True, blank=True, on_delete=models.SET_NULL
+    )
+    details = models.JSONField(
+        null=True, blank=True,
+        help_text='Contains the payload of the event section of the alert'
+    )
     sequence_id = models.PositiveIntegerField(
         default=1,
         help_text='The version / update number of this event. I.E. the SEQUENCE_NUM for a GW event.'
@@ -149,31 +187,18 @@ class EventSequence(models.Model):
         help_text='The subtype of the event. Options are type specific, i.e. GW events have initial, '
                   'preliminary, update types.'
     )
+    ingestor_source = models.CharField(default='', help_text='The source of this alert - i.e. which stream is it from?')
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["sequence_id"]
         constraints = [
             models.UniqueConstraint(
                 fields=['nonlocalizedevent', 'sequence_id'],
                 name='unique_sequence_per_nonlocalizedevent'
             )
         ]
-    # far = models.FloatField(
-    #     default=0,
-    #     verbose_name='false alarm rate',
-    #     help_text='The estimated false alarm rate'
-    # )
-    # event_probabilities = models.JSONField(
-    #     default=dict,
-    #     blank=True,
-    #     help_text='A dictionary of potential event source probabilities'
-    # )
-    # details = models.JSONField(
-    #     default=dict,
-    #     blank=True,
-    #     help_text='A dictionary for extra details related to this sequence of the event.'
-    # )
 
 
 class EventCandidate(models.Model):
@@ -190,7 +215,7 @@ class EventCandidate(models.Model):
     )
     priority = models.IntegerField(
         default=1,
-        # TODO: add description, etc
+        help_text='Internal priority of this Event Candidate'
     )
     healpix = models.BigIntegerField(
         default=-1,

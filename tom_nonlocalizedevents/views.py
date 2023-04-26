@@ -147,18 +147,15 @@ class SupereventPkView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs: dict) -> dict:
         context = super().get_context_data(**kwargs)
-        superevent = NonLocalizedEvent.objects.get(pk=kwargs['pk'])
-        sequences = list(superevent.sequences.order_by('sequence_id').values(
-            'sequence_id', 'event_subtype', 'created', 'pk'))
-        for sequence in sequences:
-            # Set the created date as a string so it can be in json format
-            sequence['created'] = sequence['created'].isoformat()
-        context['superevent_pk'] = kwargs['pk']
-        context['superevent_id'] = superevent.event_id
-        context['sequences'] = json.dumps(sequences)
-        context['tom_api_url'] = settings.TOM_API_URL
-        context['hermes_api_url'] = settings.HERMES_API_URL
-        return context
+        try:
+            superevent = NonLocalizedEvent.objects.get(pk=kwargs['pk'])
+            data = NonLocalizedEventSerializer(instance=superevent).data
+            context['superevent_data'] = json.dumps(data)
+            context['tom_api_url'] = settings.TOM_API_URL
+            context['hermes_api_url'] = settings.HERMES_API_URL
+            return context
+        except NonLocalizedEvent.DoesNotExist:
+            raise Http404
 
 
 class SupereventIdView(LoginRequiredMixin, TemplateView):
@@ -168,14 +165,8 @@ class SupereventIdView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         try:
             superevent = NonLocalizedEvent.objects.get(event_id=kwargs['event_id'])
-            sequences = list(superevent.sequences.order_by('sequence_id').values(
-                'sequence_id', 'event_subtype', 'created', 'pk'))
-            for sequence in sequences:
-                # Set the created date as a string so it can be in json format
-                sequence['created'] = sequence['created'].isoformat()
-            context['superevent_id'] = kwargs['event_id']
-            context['superevent_pk'] = superevent.pk
-            context['sequences'] = json.dumps(sequences)
+            data = NonLocalizedEventSerializer(instance=superevent).data
+            context['superevent_data'] = json.dumps(data)
             context['tom_api_url'] = settings.TOM_API_URL
             context['hermes_api_url'] = settings.HERMES_API_URL
             return context
