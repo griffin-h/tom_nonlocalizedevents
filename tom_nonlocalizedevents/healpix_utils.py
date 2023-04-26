@@ -2,8 +2,8 @@
     using healpix_alchemy and model mappings with sql_alchemy queries.
 '''
 from astropy.table import Table
-from astropy.io import fits
-from tom_nonlocalizedevents.models import EventCandidate, SkymapTile, EventLocalization, CredibleRegion
+from tom_nonlocalizedevents.models import (NonLocalizedEvent, EventCandidate, SkymapTile,
+                                           EventLocalization, CredibleRegion)
 from django.db import transaction
 from django.conf import settings
 from healpix_alchemy.constants import HPX, LEVEL
@@ -14,7 +14,12 @@ from astropy_healpix import uniq_to_level_ipix
 from mocpy import MOC
 from ligo.skymap import distance
 from dateutil.parser import parse
+import healpy as hp
+import numpy as np
 import os
+import hashlib
+from io import BytesIO
+import uuid
 import sys
 import json
 import logging
@@ -49,35 +54,104 @@ def sequence_to_bigintrange(sequence):
 
 
 def tiles_from_moc(moc):
-    return (f'[{lo},{hi})' for lo, hi in moc._interval_set.nested)
+    return (f'[{lo},{hi})' for lo, hi in moc.to_depth29_ranges)
 
 
 def tiles_from_polygon_skycoord(polygon):
     return tiles_from_moc(MOC.from_polygon_skycoord(polygon.transform_to(HPX.frame)))
 
 
-def create_localization_for_multiorder_fits(nonlocalizedevent, multiorder_fits_url):
-    ''' Takes in a GraceDB url to multiorder fits file and creates the skymap tiles in db
-    '''
-    logger.info(f"Creating localization for {nonlocalizedevent.event_id} with MOC skymap {multiorder_fits_url}")
-    header = fits.getheader(multiorder_fits_url, 1)
-    creation_date = parse(header.get('DATE'))
+def get_confidence_regions(skymap: Table):
+    """ This helper method takes in the astropy Table skymap and attempts to parse out
+        the 50 and 90 area confidence values. It returns a tuple of (area_50, area_90).
+    """
     try:
-        localization = EventLocalization.objects.get(nonlocalizedevent=nonlocalizedevent, date=creation_date)
+        # Get the total number of healpixels in the map
+        n_pixels = len(skymap['PROBDENSITY'])
+        # Covert that to the nside parameter
+        nside = hp.npix2nside(n_pixels)
+        # Sort the probabilities so we can do the cumulative sum on them
+        probabilities = skymap['PROBDENSITY']
+        probabilities.sort()
+        # Reverse the list so that the largest pixels are first
+        probabilities = probabilities[::-1]
+        cumulative_probabilities = np.cumsum(probabilities)
+        # The number of pixels in the 90 (or 50) percent range is just given by the first set of pixels that add up
+        # to 0.9 (0.5)
+        index_90 = np.min(np.flatnonzero(cumulative_probabilities >= 0.9))
+        index_50 = np.min(np.flatnonzero(cumulative_probabilities >= 0.5))
+        # Because the healpixel projection has equal area pixels, the total area is just the heal pixel area * the
+        # number of heal pixels
+        healpixel_area = hp.nside2pixarea(nside, degrees=True)
+        area_50 = (index_50 + 1) * healpixel_area
+        area_90 = (index_90 + 1) * healpixel_area
+
+        return area_50, area_90
+    except Exception as e:
+        logger.error(f'Unable to parse raw skymap for OBJECT {skymap.meta["OBJECT"]} for confidence regions: {e}')
+
+    return None, None
+
+
+def get_skymap_version(nle: NonLocalizedEvent, skymap_hash: uuid, is_combined: bool) -> int:
+    """ This method gets the most recent previous sequence of this superevent and checks if the skymap has changed.
+        It returns the 'version' of the skymap, which can be used to retrieve the proper file and image files from
+        gracedb. This is a hack because IGWN GWAlerts no longer have any way of knowing which skymap version they
+        reference.
+    """
+    try:
+        for sequence in nle.sequences.all().reverse():
+            if (is_combined and sequence.external_coincidence and sequence.external_coincidence.localization
+                    and sequence.external_coincidence.localization.skymap_hash != skymap_hash):
+                return sequence.external_coincidence.localization.skymap_version + 1
+            elif (not is_combined) and sequence.localization and sequence.localization.skymap_hash != skymap_hash:
+                return sequence.localization.skymap_version + 1
+        return 0
+    except NonLocalizedEvent.DoesNotExist:
+        return 0  # The nonlocalizedevent doesnt exist in our system yet, so this must be the first skymap version
+
+
+def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_bytes: bytes, skymap_url: str = '',
+                                   is_combined=False):
+    """ Create localization from skymap bytes and related fields """
+    logger.info(f"Creating localization for {nonlocalizedevent.event_id} with skymap {skymap_url}")
+    skymap_hash = hashlib.md5(skymap_bytes).hexdigest()
+    try:
+        localization = EventLocalization.objects.get(nonlocalizedevent=nonlocalizedevent, skymap_hash=skymap_hash)
     except EventLocalization.DoesNotExist:
-        distance_mean = header.get('DISTMEAN')
-        distance_std = header.get('DISTSTD')
-        data = Table.read(multiorder_fits_url)
-        row_dist_mean, row_dist_std, _ = distance.parameters_to_moments(data['DISTMU'], data['DISTSIGMA'])
+        skymap = Table.read(BytesIO(skymap_bytes))
+        distance_mean = skymap.meta['DISTMEAN']
+        distance_std = skymap.meta['DISTSTD']
+        date = parse(skymap.meta['DATE'])
+        skymap_uuid = uuid.UUID(skymap_hash)
+        skymap_version = get_skymap_version(nonlocalizedevent, skymap_hash=skymap_uuid, is_combined=is_combined)
+        if not skymap_url:
+            if is_combined:
+                skymap_url = (
+                    f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}"
+                    f"/files/combined-ext.multiorder.fits,{skymap_version}"
+                )
+            else:
+                skymap_url = (
+                    f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}"
+                    f"/files/bayestar.multiorder.fits,{skymap_version}"
+                )
+        area_50, area_90 = get_confidence_regions(skymap)
+        row_dist_mean, row_dist_std, _ = distance.parameters_to_moments(
+            skymap['DISTMU'], skymap['DISTSIGMA'])
         with transaction.atomic():
             localization = EventLocalization.objects.create(
                 nonlocalizedevent=nonlocalizedevent,
                 distance_mean=distance_mean,
                 distance_std=distance_std,
-                skymap_moc_file_url=multiorder_fits_url,
-                date=creation_date
+                skymap_version=skymap_version,
+                skymap_hash=skymap_uuid,
+                skymap_url=skymap_url,
+                area_50=area_50,
+                area_90=area_90,
+                date=date
             )
-            for i, row in enumerate(data):
+            for i, row in enumerate(skymap):
                 # This is necessary to make sure we don't get an underflow error in postgres
                 # when operating with the probdensity float field
                 probdensity = row['PROBDENSITY'] if row['PROBDENSITY'] > sys.float_info.min else 0

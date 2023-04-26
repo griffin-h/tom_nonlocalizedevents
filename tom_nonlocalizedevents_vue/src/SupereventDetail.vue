@@ -5,8 +5,8 @@
         {{ message }}
       </b-alert>
     </div>
-    <div v-show="supereventHermesData.sequences !== undefined">
-      <gravitational-wave-banner :eventAttributes="superevent_attributes" :supereventId="supereventId" />
+    <div v-show="sequence !== undefined">
+      <gravitational-wave-banner :sequence="sequence" :supereventId="supereventId" />
     </div>
     <b-row style="margin-top: 6px;">
       <b-col cols="8">
@@ -53,7 +53,7 @@
         <h3>Active Candidates</h3>
         <candidate-target-table
           :candidates="this.viableCandidates"
-          :sequenceId="this.sequenceId"
+          :sequenceId="this.sequence.sequence_id"
           @toggle-viability="onToggleViability"
           @change-priority="onChangePriority"
         />
@@ -64,7 +64,7 @@
         <h3>Retired Candidates</h3>
         <candidate-target-table
           :candidates="this.nonViableCandidates"
-          :sequenceId="this.sequenceId"
+          :sequenceId="this.sequence.sequence_id"
           @toggle-viability="onToggleViability"
           @change-priority="onChangePriority"
         />
@@ -91,9 +91,16 @@ export default {
   props: {
     supereventPk: Number,
     supereventId: String,
-    sequenceId: Number,
-    supereventHermesData: {
+    sequence: {
       type: Object,
+      required: true
+    },
+    alerts: {
+      type: Array,
+      required: true
+    },
+    candidates: {
+      type: Array,
       required: true
     }
   },
@@ -106,7 +113,6 @@ export default {
   },
   data: function () {
     return {
-      alerts: [],
       alert_fields: [
         { key: "identifier" },
         { key: "timestamp", sortable: true },
@@ -117,11 +123,28 @@ export default {
       eventCandidates: [],
       selectedAlerts: [],
       superevent_data: {},
-      superevent_attributes: {},
-      sequence_skymap_fits_url: '',
     };
   },
   computed: {
+    hasExternalCoincidence() {
+      return !_.isNil(this.sequence.external_coincidence) && !_.isEmpty(this.sequence.external_coincidence);
+    },
+    skymapVersion() {
+      if (this.hasExternalCoincidence){
+        return _.get(this.sequence, 'external_coincidence.localization.skymap_version', undefined);
+      }
+      else{
+        return _.get(this.sequence, 'localization.skymap_version', undefined);
+      }
+    },
+    skymapUrl() {
+      if (this.hasExternalCoincidence){
+        return _.get(this.sequence, 'external_coincidence.localization.skymap_url', undefined);
+      }
+      else{
+        return _.get(this.sequence, 'localization.skymap_url', undefined);
+      }
+    },
     viableCandidates() {
       return this.eventCandidates.filter((item) => {
         return item.viable;
@@ -134,15 +157,32 @@ export default {
     },
   },
   created() {
-    this.getSupereventData();
-    this.setupSupereventHermesData();
+    this.processEventCandidates();
   },
-  watch: {
-    supereventHermesData: function() {
-      this.setupSupereventHermesData();
-    }
-  },
+
   methods: {
+    processEventCandidates() {
+      this.eventCandidates = [];
+      this.candidates.forEach((candidate) => {
+        if (this.hasExternalCoincidence) {
+          if (this.sequence.external_coincidence.localization.id.toString() in candidate['credible_regions']) {
+            candidate['credible_region'] = candidate['credible_regions'][this.sequence.external_coincidence.localization.id.toString()];
+          }
+          else{
+            candidate['credible_region'] = 100;
+          }
+        }
+        else {
+          if(this.sequence.localization.id.toString() in candidate['credible_regions']) {
+            candidate['credible_region'] = candidate['credible_regions'][this.sequence.localization.id.toString()];
+          }
+          else {
+            candidate['credible_region'] = 100;
+          }
+        }
+        this.eventCandidates.push(candidate);
+      });
+    },
     getSupereventData() {
       // set this.eventCandidates
       let oldEventCandidates = this.eventCandidates.slice();
@@ -150,23 +190,18 @@ export default {
       // retrieve the superevent data from the REST API
       axios
         .get(
-          `${this.$store.state.tomApiBaseUrl}/api/nonlocalizedevents/${this.supereventPk}`
+          `${this.$store.state.tomApiBaseUrl}/api/nonlocalizedevents/${this.supereventPk}/`
         )
         .then((response) => {
           response["data"]["candidates"].forEach((event_candidate) => {
-            if(this.sequenceId.toString() in event_candidate['credible_regions']) {
-              event_candidate['credible_region'] = event_candidate['credible_regions'][this.sequenceId.toString()];
+            if(this.sequence.sequence_id.toString() in event_candidate['credible_regions']) {
+              event_candidate['credible_region'] = event_candidate['credible_regions'][this.sequence.sequence_id.toString()];
             }
             else {
               event_candidate['credible_region'] = 100;
             }
             this.eventCandidates.push(event_candidate);
           });
-          for (let sequence_index in response["data"]["sequences"]) {
-            if (response["data"]["sequences"][sequence_index]["sequence_id"] == this.sequenceId) {
-              this.sequence_skymap_fits_url = response["data"]["sequences"][sequence_index]["skymap_fits_url"];
-            }
-          }
         })
         .catch((error) => {
           console.log(
@@ -175,27 +210,26 @@ export default {
           this.eventCandidates = oldEventCandidates;
         });
     },
-    setupSupereventHermesData() {
-      if (this.supereventHermesData.sequences !== undefined && this.supereventHermesData.sequences.length > 0) {
-        for (const sequence_index in this.supereventHermesData.sequences) {
-          if (this.supereventHermesData.sequences[sequence_index]['sequence_number'] == this.sequenceId) {
-            this.superevent_attributes = this.supereventHermesData.sequences[sequence_index].message.data;
-            break;
-          }
-        }
-        this.alerts = this.supereventHermesData.references;
-      }
-    },
     getVolumeImageUrl(volume_image=true) {
       // Construct URL with the superevent id and base skymap fits moc url
       // These files could eithe be a bayestar or LALInference file
       // for example: https://gracedb.ligo.org/api/superevents/S190426c/files/bayestar.volume.png"
-      let image_base = '.png';
+      let image_base = '';
       if (volume_image) {
-        image_base = '.volume.png';
+        image_base = 'bayestar.volume.png';
       }
-      let url = this.sequence_skymap_fits_url.replace('LALInference.multiorder.fits', 'LALInference' + image_base);
-      url = url.replace('bayestar.multiorder.fits', 'bayestar' + image_base);
+      else {
+        if (this.hasExternalCoincidence) {
+          image_base = 'combined-ext.png';
+        }
+        else {
+          image_base = 'bayestar.png';
+        }
+      }
+      let url = 'https://gracedb.ligo.org/api/superevents/' + this.supereventId + '/files/' + image_base;
+      if (this.skymapVersion !== undefined) {
+        url = url + ',' + this.skymapVersion;
+      }
       return url;
     },
     onCreatedCandidates(count) {
@@ -215,7 +249,7 @@ export default {
         });
       }
     },
-    onToggleViability(row, event) {
+    onToggleViability(row, _event) {
       const event_candidate = row.item;  // it's table of event_candidates, so row.items are event_candidates
       const url = `${this.$store.state.tomApiBaseUrl}/api/eventcandidates/${event_candidate.id}/`;
       const new_viablility = !event_candidate.viable;
@@ -253,7 +287,7 @@ export default {
 
         axios  // make the PATCH request
             .patch(url, patch) // patch only serializes/validates/updates the fields in the Request Body
-            .then((response) => {
+            .then((_response) => {
                 // if successful, update the front-end value with (new) data from the PATCH response
                 //row.item.priority = response['data'].priority; 
             })
