@@ -64,13 +64,14 @@ def ingest_sequence_from_hermes_message(message):
             )
             external_coincidence, _ = ExternalCoincidence.objects.get_or_create(
                 localization=combined_localization,
-                 defaults={'details': data.get('external_coinc')}
+                defaults={'details': data.get('external_coinc')}
             )
         except Exception as e:
             combined_localization = None
-            logger.error(
-                f"Failed to retrieve and process combined localization from combined skymap file at {combined_skymap_url}. Exception: {e}"
-            )
+            logger.error((
+                f"Failed to retrieve and process combined localization from combined skymap file at"
+                f"{combined_skymap_url}. Exception: {e}"
+            ))
             logger.error(traceback.format_exc())
 
     # Now ingest the sequence for that event
