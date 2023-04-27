@@ -21,5 +21,5 @@ class EventLocalizationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = EventLocalization
 
-    skymap_moc_file_url = factory.Faker('pystr')
+    skymap_url = factory.Faker('pystr')
     date = factory.Faker('date_time')

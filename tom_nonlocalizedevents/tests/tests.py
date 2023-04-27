@@ -30,9 +30,9 @@ class TestNonLocalizedEventViewSet(NonLocalizedEventAPITestCase):
 
         self.assertEqual(response.json()['count'], 2)
         self.assertContains(response, f'"event_id":"{self.superevent1.event_id}"')
-        self.assertContains(response, f'"skymap_fits_url":"{self.eventlocalization1.skymap_moc_file_url}"')
+        self.assertContains(response, f'"skymap_url":"{self.eventlocalization1.skymap_url}"')
         self.assertContains(response, f'"event_id":"{self.superevent2.event_id}"')
-        self.assertContains(response, f'"skymap_fits_url":"{self.eventlocalization2.skymap_moc_file_url}"')
+        self.assertContains(response, f'"skymap_url":"{self.eventlocalization2.skymap_url}"')
 
     def test_nonlocalizedevent_index_view(self):
         response = self.client.get(reverse('nonlocalizedevents:index'))

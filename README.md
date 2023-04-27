@@ -1,4 +1,4 @@
-[![pypi](https://img.shields.io/pypi/v/tom-superevents.svg)](https://pypi.python.org/pypi/tom-superevents)
+[![pypi](https://img.shields.io/pypi/v/tom-nonlocalizedevents.svg)](https://pypi.python.org/pypi/tom-nonlocalizedevents)
 [![run-tests](https://github.com/TOMToolkit/tom_nonlocalizedevents/actions/workflows/run-tests.yml/badge.svg)](https://github.com/TOMToolkit/tom_nonlocalizedevents/actions/workflows/run-tests.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/cbcf7ce565d8450f86fff863ef061ff9)](https://www.codacy.com/gh/TOMToolkit/tom_nonlocalizedevents/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TOMToolkit/tom_nonlocalizedevents&amp;utm_campaign=Badge_Grade)
 [![Coverage Status](https://coveralls.io/repos/github/TOMToolkit/tom_nonlocalizedevents/badge.svg?branch=main)](https://coveralls.io/github/TOMToolkit/tom_nonlocalizedevents?branch=main)
@@ -70,10 +70,11 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
 | ------------ | ----------- | ------- |
 | `SA_DB_CONNECTION_URL` | Location of your django postgres database used for sqlalchemy | by default, this uses Django `default` DB for the project |
 | `CREDIBLE_REGION_PROBABILITIES` | JSON List of Credible Region probabilities to automatically check each candidate target for | `'[0.25, 0.5, 0.75, 0.9, 0.95]'` |
+| `SAVE_TEST_ALERTS` | Boolean on if you want to save test nonlocalizedevents into your database (those with event_id beginning with 'M') | `true` |
 
 6. In your TOM project, make sure to run `python manage.py collectstatic` after installing this app, to collect its Vue pages into your `staticfiles` directory.
 
-7. If you want to automatically ingest GW events into your TOM, you should also install the `tom_alertstreams` app into your TOM and configure it to use the tom_nonlocalizedevents handler to ingest GW events: `tom_nonlocalizedevents.alertstream_handlers.gw_event_handler.handle_message`. There is also a handler to handle retractions via the `handle_retraction` method in that package. These are currently written to work with LVC GW messages.
+7. If you want to automatically ingest GW events into your TOM, you should also install the `tom_alertstreams` app into your TOM and configure it to use the tom_nonlocalizedevents handler to ingest GW events. The preferred way is to use the hop `igwn.gwalerts` topic and set it to the handler `tom_nonlocalizedevents.alertstream_handlers.igwn_event_handler.handle_igwn_message`. This format has the newest Ligo O4 fields. There is legacy support for the gcn classic over kafka plaintext formatted LVC alerts using the handler `tom_nonlocalizedevents.alertstream_handlers.gcn_event_handler.handle_message`. There is also a handler to handle retractions via the `handle_retraction` method in that package. For an example of what needs to be in your settings to configure `tom_alertstreams` for these streams, look [here](https://github.com/LCOGT/hermes/blob/dev/hermes_base/settings.py#L232)
 
 ## Development
 
