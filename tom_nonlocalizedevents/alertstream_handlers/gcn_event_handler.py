@@ -47,6 +47,7 @@ def get_moc_url_from_skymap_fits_url(skymap_fits_url):
 def handle_message(message):
     # It receives a bytestring message or a Kafka message in the LIGO GW format
     # fields must be extracted from the message text and stored into in the model
+    # It returns the nonlocalizedevent and event sequence ingested or None, None.
     if not isinstance(message, bytes):
         bytes_message = message.value()
     else:
@@ -100,6 +101,9 @@ def handle_message(message):
                            f'{event_sequence} for NonLocalizedEvent: {nonlocalizedevent}')
             logger.warning(warning_msg)
 
+        return nonlocalizedevent, event_sequence
+    return None, None
+
 
 def handle_retraction(message):
     # It receives a bytestring message or a Kafka message in the LIGO GW format
@@ -118,6 +122,8 @@ def handle_retraction(message):
         retracted_event = NonLocalizedEvent.objects.get(event_id=fields['trigger_num'])
         retracted_event.state = NonLocalizedEvent.NonLocalizedEventState.RETRACTED
         retracted_event.save()
+        return retracted_event
     except NonLocalizedEvent.DoesNotExist:
         logger.warning((f"Got a Retraction notice for event id {fields['trigger_num']}"
                         f"which does not exist in the database"))
+    return None

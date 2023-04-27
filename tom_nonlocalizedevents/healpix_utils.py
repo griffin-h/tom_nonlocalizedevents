@@ -6,6 +6,7 @@ from tom_nonlocalizedevents.models import (NonLocalizedEvent, EventCandidate, Sk
                                            EventLocalization, CredibleRegion)
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 from healpix_alchemy.constants import HPX, LEVEL
 from healpix_alchemy.types import Tile, Point
 import sqlalchemy as sa
@@ -122,7 +123,7 @@ def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_
         skymap = Table.read(BytesIO(skymap_bytes))
         distance_mean = skymap.meta['DISTMEAN']
         distance_std = skymap.meta['DISTSTD']
-        date = parse(skymap.meta['DATE'])
+        date = parse(skymap.meta['DATE']).replace(tzinfo=timezone.utc)
         skymap_uuid = uuid.UUID(skymap_hash)
         skymap_version = get_skymap_version(nonlocalizedevent, skymap_hash=skymap_uuid, is_combined=is_combined)
         if not skymap_url:

@@ -21,5 +21,5 @@ urlpatterns = [
     path('', views.NonLocalizedEventListView.as_view(), name='index'),
     path('<int:pk>/', SupereventPkView.as_view(), name='detail'),
     path('<str:event_id>/', SupereventIdView.as_view(), name='event-detail'),
-    path('alert/createfrom', views.CreateEventFromSCiMMAAlertView.as_view(), name='create-from-alert')
+    path('alert/createfrom', views.CreateEventFromHermesAlertView.as_view(), name='create-from-alert')
 ]
