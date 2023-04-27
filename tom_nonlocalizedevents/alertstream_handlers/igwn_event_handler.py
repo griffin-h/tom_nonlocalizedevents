@@ -98,3 +98,5 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
             f'{event_sequence} for NonLocalizedEvent: {nonlocalizedevent}'
         )
         logger.warning(warning_msg)
+
+    return nonlocalizedevent, event_sequence
