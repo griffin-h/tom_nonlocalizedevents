@@ -14,10 +14,10 @@ from django.conf import settings
 from rest_framework import permissions, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
+from tom_nonlocalizedevents.ingestion import ingest_sequence_from_hermes_message
 from tom_nonlocalizedevents.models import EventCandidate, EventLocalization, NonLocalizedEvent
 from tom_nonlocalizedevents.serializers import (EventCandidateSerializer, EventLocalizationSerializer,
                                                 NonLocalizedEventSerializer)
-from tom_nonlocalizedevents.alertstream_handlers import gw_event_handler
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,6 @@ class NonLocalizedEventListView(LoginRequiredMixin, ListView):
 
 
 # from the tom_alerts query_result.html
-
 class CreateEventFromHermesAlertView(View):
     """
     Creates the models.NonLocalizedEvent instance and redirect to NonLocalizedEventDetailView
@@ -74,8 +73,8 @@ class CreateEventFromHermesAlertView(View):
             # the NonLocalizedEvent is created by handling all the messages from
             # the event sequence as if they were ingested
             for sequenced_message in cached_event['sequences']:
-                message = sequenced_message['message']['message_text']
-                gw_event_handler.handle_message(message.encode('utf-8'))
+                logger.debug(f"Creating sequence from HermesBroker: {sequenced_message}")
+                ingest_sequence_from_hermes_message(sequenced_message)
 
         return redirect(reverse('nonlocalizedevents:index'))
 

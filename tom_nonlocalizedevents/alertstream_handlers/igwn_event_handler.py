@@ -77,7 +77,7 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
                 )
                 logger.error(traceback.format_exc())
 
-    logger.warning(f"Storing igwn alert: {alert}")
+    logger.debug(f"Storing igwn alert: {alert}")
 
     # Now ingest the sequence for that event
     sequence_number = get_sequence_number(alert['superevent_id'])
