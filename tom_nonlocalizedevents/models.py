@@ -187,7 +187,7 @@ class EventSequence(models.Model):
         help_text='The subtype of the event. Options are type specific, i.e. GW events have initial, '
                   'preliminary, update types.'
     )
-    ingestor_source = models.CharField(default='', help_text='The source of this alert - i.e. which stream is it from?')
+    ingestor_source = models.CharField(default='', max_length=64, help_text='The source of this alert - i.e. which stream is it from?')
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
