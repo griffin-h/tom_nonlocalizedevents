@@ -30,7 +30,7 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
         return None, None
 
     if alert.get('alert_type', '') == 'RETRACTION':
-        nonlocalizedevent = NonLocalizedEvent.objects.update_or_create(
+        nonlocalizedevent, nle_created = NonLocalizedEvent.objects.update_or_create(
             event_id=alert['superevent_id'],
             event_type=NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE,
             defaults={'state': NonLocalizedEvent.NonLocalizedEventState.RETRACTED}
