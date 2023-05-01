@@ -11,6 +11,7 @@ from healpix_alchemy.constants import HPX, LEVEL
 from healpix_alchemy.types import Tile, Point
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship, declarative_base, Session
+from astropy import units as u
 import astropy_healpix as ah
 from mocpy import MOC
 from ligo.skymap import distance
