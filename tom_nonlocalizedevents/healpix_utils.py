@@ -11,7 +11,7 @@ from healpix_alchemy.constants import HPX, LEVEL
 from healpix_alchemy.types import Tile, Point
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship, declarative_base, Session
-from astropy_healpix import uniq_to_level_ipix
+import astropy_healpix as ah
 from mocpy import MOC
 from ligo.skymap import distance
 from dateutil.parser import parse
@@ -45,7 +45,7 @@ sa_engine = sa.create_engine(SA_DB_CONNECTION_URL, pool_recycle=POOL_RECYCLE)
 
 
 def uniq_to_bigintrange(value):
-    level, ipix = uniq_to_level_ipix(value)
+    level, ipix = ah.uniq_to_level_ipix(value)
     shift = 2 * (LEVEL - level)
     return (ipix << shift, (ipix + 1) << shift)
 
