@@ -16,7 +16,6 @@ import astropy_healpix as ah
 from mocpy import MOC
 from ligo.skymap import distance
 from dateutil.parser import parse
-import healpy as hp
 import numpy as np
 import os
 import hashlib
