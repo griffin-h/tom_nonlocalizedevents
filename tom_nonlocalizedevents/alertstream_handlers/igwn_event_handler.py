@@ -27,15 +27,15 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
     logger.warning(f"Handling igwn alert: {alert}")
     # Only store test alerts if we are configured to do so
     if alert.get('superevent_id', '').startswith('M') and not settings.SAVE_TEST_ALERTS:
-        return
+        return None, None
 
     if alert.get('alert_type', '') == 'RETRACTION':
-        NonLocalizedEvent.objects.update_or_create(
+        nonlocalizedevent, nle_created = NonLocalizedEvent.objects.update_or_create(
             event_id=alert['superevent_id'],
             event_type=NonLocalizedEvent.NonLocalizedEventType.GRAVITATIONAL_WAVE,
             defaults={'state': NonLocalizedEvent.NonLocalizedEventState.RETRACTED}
         )
-        return
+        return nonlocalizedevent, None
 
     nonlocalizedevent, nle_created = NonLocalizedEvent.objects.get_or_create(
         event_id=alert['superevent_id'],
