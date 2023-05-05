@@ -11,7 +11,8 @@ from healpix_alchemy.constants import HPX, LEVEL
 from healpix_alchemy.types import Tile, Point
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship, declarative_base, Session
-from astropy_healpix import uniq_to_level_ipix
+from astropy import units as u
+import astropy_healpix as ah
 from mocpy import MOC
 from ligo.skymap import distance
 from dateutil.parser import parse
@@ -45,7 +46,7 @@ sa_engine = sa.create_engine(SA_DB_CONNECTION_URL, pool_recycle=POOL_RECYCLE)
 
 
 def uniq_to_bigintrange(value):
-    level, ipix = uniq_to_level_ipix(value)
+    level, ipix = ah.uniq_to_level_ipix(value)
     shift = 2 * (LEVEL - level)
     return (ipix << shift, (ipix + 1) << shift)
 
@@ -65,27 +66,24 @@ def tiles_from_polygon_skycoord(polygon):
 def get_confidence_regions(skymap: Table):
     """ This helper method takes in the astropy Table skymap and attempts to parse out
         the 50 and 90 area confidence values. It returns a tuple of (area_50, area_90).
+        See https://emfollow.docs.ligo.org/userguide/tutorial/multiorder_skymaps.html.
     """
     try:
-        # Get the total number of healpixels in the map
-        n_pixels = len(skymap['PROBDENSITY'])
-        # Covert that to the nside parameter
-        nside = hp.npix2nside(n_pixels)
-        # Sort the probabilities so we can do the cumulative sum on them
-        probabilities = skymap['PROBDENSITY']
-        probabilities.sort()
-        # Reverse the list so that the largest pixels are first
-        probabilities = probabilities[::-1]
-        cumulative_probabilities = np.cumsum(probabilities)
-        # The number of pixels in the 90 (or 50) percent range is just given by the first set of pixels that add up
-        # to 0.9 (0.5)
-        index_90 = np.min(np.flatnonzero(cumulative_probabilities >= 0.9))
-        index_50 = np.min(np.flatnonzero(cumulative_probabilities >= 0.5))
-        # Because the healpixel projection has equal area pixels, the total area is just the heal pixel area * the
-        # number of heal pixels
-        healpixel_area = hp.nside2pixarea(nside, degrees=True)
-        area_50 = (index_50 + 1) * healpixel_area
-        area_90 = (index_90 + 1) * healpixel_area
+        # Sort the pixels of the sky map by descending probability density
+        skymap.sort('PROBDENSITY', reverse=True)
+        # Find the area of each pixel
+        level, ipix = ah.uniq_to_level_ipix(skymap['UNIQ'])
+        pixel_area = ah.nside_to_pixel_area(ah.level_to_nside(level))
+        # Calculate the probability within each pixel: the pixel area times the probability density
+        prob = pixel_area * skymap['PROBDENSITY']
+        # Calculate the cumulative sum of the probability
+        cumprob = np.cumsum(prob)
+        # Find the pixel for which the probability sums to 0.5 (0.9)
+        index_50 = cumprob.searchsorted(0.5)
+        index_90 = cumprob.searchsorted(0.9)
+        # The area of the 50% (90%) credible region is simply the sum of the areas of the pixels up to that probability
+        area_50 = pixel_area[:index_50].sum().to_value(u.deg ** 2.)
+        area_90 = pixel_area[:index_90].sum().to_value(u.deg ** 2.)
 
         return area_50, area_90
     except Exception as e:
