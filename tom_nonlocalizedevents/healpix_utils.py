@@ -227,6 +227,7 @@ def update_credible_region_percent_for_candidates(eventlocalization, prob, event
     if not event_candidate_ids:
         event_candidate_ids = list(eventlocalization.nonlocalizedevent.candidates.values_list('pk', flat=True))
 
+    # TODO: is there a context manager for this??
     session = Session(sa_engine)
 
     cum_prob = sa.func.sum(
@@ -270,6 +271,7 @@ def update_credible_region_percent_for_candidates(eventlocalization, prob, event
             }
         )
 
+    session.close()
 
 # def point_in_range_django(eventlocalization, prob):
 # This code is a beginning attempt to translate the healpix_alchemy query from sql_alchemy to django ORM
