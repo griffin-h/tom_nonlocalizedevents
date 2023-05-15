@@ -25,8 +25,16 @@ def get_sequence_number(superevent_id: str) -> int:
 def handle_igwn_message(message: JSONBlob, metadata: Metadata):
     alert = message.content[0]
     logger.warning(f"Handling igwn alert: {alert}")
+
     # Only store test alerts if we are configured to do so
-    if alert.get('superevent_id', '').startswith('M') and not settings.SAVE_TEST_ALERTS:
+    # TODO: consider moving SAVE_TEST_ALERTS from top level of settings
+    #  to the ALERT_STREAMS list of stream configuration dictionaries.
+    try:
+        save_test_alerts = settings.SAVE_TEST_ALERTS
+    except AttributeError as err:
+        logger.warning(f'{err} Using False as default value.')
+        save_test_alerts = False
+    if alert.get('superevent_id', '').startswith('M') and not save_test_alerts:
         return
 
     if alert.get('alert_type', '') == 'RETRACTION':
