@@ -33,7 +33,7 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
         save_test_alerts = settings.SAVE_TEST_ALERTS
     except AttributeError as err:
         logger.warning(f'{err} Using False as default value.')
-        save_test_alerts = False
+        save_test_alerts = True
     if alert.get('superevent_id', '').startswith('M') and not save_test_alerts:
         return
 
