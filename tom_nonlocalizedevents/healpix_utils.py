@@ -224,51 +224,48 @@ def update_credible_region_percent_for_candidates(eventlocalization, prob, event
     if not event_candidate_ids:
         event_candidate_ids = list(eventlocalization.nonlocalizedevent.candidates.values_list('pk', flat=True))
 
-    # TODO: is there a context manager for this??
-    session = Session(sa_engine)
+    with Session(sa_engine) as session:
 
-    cum_prob = sa.func.sum(
-        SaSkymapTile.probdensity * SaSkymapTile.tile.area
-    ).over(
-        order_by=SaSkymapTile.probdensity.desc()
-    ).label(
-        'cum_prob'
-    )
-
-    subquery = sa.select(
-        SaSkymapTile.probdensity,
-        cum_prob
-    ).filter(
-        SaSkymapTile.localization_id == eventlocalization.id
-    ).subquery()
-
-    min_probdensity = sa.select(
-        sa.func.min(subquery.columns.probdensity)
-    ).filter(
-        subquery.columns.cum_prob <= prob
-    ).scalar_subquery()
-
-    query = sa.select(
-        SaEventCandidate.id
-    ).filter(
-        SaEventCandidate.id.in_(event_candidate_ids),
-        SaSkymapTile.localization_id == eventlocalization.id,
-        SaSkymapTile.tile.contains(SaEventCandidate.healpix),
-        SaSkymapTile.probdensity >= min_probdensity
-    )
-
-    results = session.execute(query)
-
-    for sa_event_candidate_id in results:
-        CredibleRegion.objects.update_or_create(
-            candidate=EventCandidate.objects.get(id=sa_event_candidate_id[0]),
-            localization=eventlocalization,
-            defaults={
-                'smallest_percent': int(prob * 100.0)
-            }
+        cum_prob = sa.func.sum(
+            SaSkymapTile.probdensity * SaSkymapTile.tile.area
+        ).over(
+            order_by=SaSkymapTile.probdensity.desc()
+        ).label(
+            'cum_prob'
         )
 
-    session.close()
+        subquery = sa.select(
+            SaSkymapTile.probdensity,
+            cum_prob
+        ).filter(
+            SaSkymapTile.localization_id == eventlocalization.id
+        ).subquery()
+
+        min_probdensity = sa.select(
+            sa.func.min(subquery.columns.probdensity)
+        ).filter(
+            subquery.columns.cum_prob <= prob
+        ).scalar_subquery()
+
+        query = sa.select(
+            SaEventCandidate.id
+        ).filter(
+            SaEventCandidate.id.in_(event_candidate_ids),
+            SaSkymapTile.localization_id == eventlocalization.id,
+            SaSkymapTile.tile.contains(SaEventCandidate.healpix),
+            SaSkymapTile.probdensity >= min_probdensity
+        )
+
+        results = session.execute(query)
+
+        for sa_event_candidate_id in results:
+            CredibleRegion.objects.update_or_create(
+                candidate=EventCandidate.objects.get(id=sa_event_candidate_id[0]),
+                localization=eventlocalization,
+                defaults={
+                    'smallest_percent': int(prob * 100.0)
+                }
+            )
 
 # def point_in_range_django(eventlocalization, prob):
 # This code is a beginning attempt to translate the healpix_alchemy query from sql_alchemy to django ORM
