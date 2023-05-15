@@ -69,8 +69,13 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
 | Env variable | Description | Default |
 | ------------ | ----------- | ------- |
 | `SA_DB_CONNECTION_URL` | Location of your django postgres database used for sqlalchemy | by default, this uses Django `default` DB for the project |
+| `POOL_SIZE` | The number of connections to keep open inside the connection pool. ([docs](https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.pool_size)) | 5 |
+| `MAX_OVERFLOW` | The number of connections to allow in connection pool “overflow”. ([docs](https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.max_overflow)) | 10 |
 | `CREDIBLE_REGION_PROBABILITIES` | JSON List of Credible Region probabilities to automatically check each candidate target for | `'[0.25, 0.5, 0.75, 0.9, 0.95]'` |
 | `SAVE_TEST_ALERTS` | Boolean on if you want to save test nonlocalizedevents into your database (those with event_id beginning with 'M') | `true` |
+
+See [Engine Configuration](https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine) for
+details of SQLAlchemy Engine Configuration.
 
 6. In your TOM project, make sure to run `python manage.py collectstatic` after installing this app, to collect its Vue pages into your `staticfiles` directory.
 

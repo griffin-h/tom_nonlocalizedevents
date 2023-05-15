@@ -31,17 +31,29 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-POOL_RECYCLE = 4 * 60 * 60
+#
+# SQLAlchemy Engine Configuration
+#  see https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine
+
 SA_DB_CONNECTION_URL = os.getenv(
     'SA_DB_CONNECTION_URL',
     (f"postgresql://{settings.DATABASES['default']['USER']}:{settings.DATABASES['default']['PASSWORD']}"
      f"@{settings.DATABASES['default']['HOST']}:{settings.DATABASES['default']['PORT']}"
      f"/{settings.DATABASES['default']['NAME']}"))
+POOL_RECYCLE = 4 * 60 * 60
+POOL_SIZE = os.getenv('POOL_SIZE', 5)
+MAX_OVERFLOW = os.getenv('MAX_OVERFLOW', 10)
+
 CREDIBLE_REGION_PROBABILITIES = sorted(json.loads(os.getenv(
     'CREDIBLE_REGION_PROBABILITIES', '[0.25, 0.5, 0.75, 0.9, 0.95]')), reverse=True)
 
 Base = declarative_base()
-sa_engine = sa.create_engine(SA_DB_CONNECTION_URL, pool_recycle=POOL_RECYCLE)
+sa_engine = sa.create_engine(
+    SA_DB_CONNECTION_URL,
+    pool_recycle=POOL_RECYCLE,
+    pool_size=POOL_SIZE,
+    max_overflow=MAX_OVERFLOW
+)
 
 
 def uniq_to_bigintrange(value):
