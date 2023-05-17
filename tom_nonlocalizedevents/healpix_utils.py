@@ -16,7 +16,6 @@ import astropy_healpix as ah
 from mocpy import MOC
 from ligo.skymap import distance
 from dateutil.parser import parse
-import healpy as hp
 import numpy as np
 import os
 import hashlib
@@ -32,17 +31,29 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-POOL_RECYCLE = 4 * 60 * 60
+#
+# SQLAlchemy Engine Configuration
+#  see https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine
+
 SA_DB_CONNECTION_URL = os.getenv(
     'SA_DB_CONNECTION_URL',
     (f"postgresql://{settings.DATABASES['default']['USER']}:{settings.DATABASES['default']['PASSWORD']}"
      f"@{settings.DATABASES['default']['HOST']}:{settings.DATABASES['default']['PORT']}"
      f"/{settings.DATABASES['default']['NAME']}"))
+POOL_RECYCLE = 4 * 60 * 60
+POOL_SIZE = os.getenv('POOL_SIZE', 5)
+MAX_OVERFLOW = os.getenv('MAX_OVERFLOW', 10)
+
 CREDIBLE_REGION_PROBABILITIES = sorted(json.loads(os.getenv(
     'CREDIBLE_REGION_PROBABILITIES', '[0.25, 0.5, 0.75, 0.9, 0.95]')), reverse=True)
 
 Base = declarative_base()
-sa_engine = sa.create_engine(SA_DB_CONNECTION_URL, pool_recycle=POOL_RECYCLE)
+sa_engine = sa.create_engine(
+    SA_DB_CONNECTION_URL,
+    pool_recycle=POOL_RECYCLE,
+    pool_size=POOL_SIZE,
+    max_overflow=MAX_OVERFLOW
+)
 
 
 def uniq_to_bigintrange(value):
@@ -213,49 +224,48 @@ def update_credible_region_percent_for_candidates(eventlocalization, prob, event
     if not event_candidate_ids:
         event_candidate_ids = list(eventlocalization.nonlocalizedevent.candidates.values_list('pk', flat=True))
 
-    session = Session(sa_engine)
+    with Session(sa_engine) as session:
 
-    cum_prob = sa.func.sum(
-        SaSkymapTile.probdensity * SaSkymapTile.tile.area
-    ).over(
-        order_by=SaSkymapTile.probdensity.desc()
-    ).label(
-        'cum_prob'
-    )
-
-    subquery = sa.select(
-        SaSkymapTile.probdensity,
-        cum_prob
-    ).filter(
-        SaSkymapTile.localization_id == eventlocalization.id
-    ).subquery()
-
-    min_probdensity = sa.select(
-        sa.func.min(subquery.columns.probdensity)
-    ).filter(
-        subquery.columns.cum_prob <= prob
-    ).scalar_subquery()
-
-    query = sa.select(
-        SaEventCandidate.id
-    ).filter(
-        SaEventCandidate.id.in_(event_candidate_ids),
-        SaSkymapTile.localization_id == eventlocalization.id,
-        SaSkymapTile.tile.contains(SaEventCandidate.healpix),
-        SaSkymapTile.probdensity >= min_probdensity
-    )
-
-    results = session.execute(query)
-
-    for sa_event_candidate_id in results:
-        CredibleRegion.objects.update_or_create(
-            candidate=EventCandidate.objects.get(id=sa_event_candidate_id[0]),
-            localization=eventlocalization,
-            defaults={
-                'smallest_percent': int(prob * 100.0)
-            }
+        cum_prob = sa.func.sum(
+            SaSkymapTile.probdensity * SaSkymapTile.tile.area
+        ).over(
+            order_by=SaSkymapTile.probdensity.desc()
+        ).label(
+            'cum_prob'
         )
 
+        subquery = sa.select(
+            SaSkymapTile.probdensity,
+            cum_prob
+        ).filter(
+            SaSkymapTile.localization_id == eventlocalization.id
+        ).subquery()
+
+        min_probdensity = sa.select(
+            sa.func.min(subquery.columns.probdensity)
+        ).filter(
+            subquery.columns.cum_prob <= prob
+        ).scalar_subquery()
+
+        query = sa.select(
+            SaEventCandidate.id
+        ).filter(
+            SaEventCandidate.id.in_(event_candidate_ids),
+            SaSkymapTile.localization_id == eventlocalization.id,
+            SaSkymapTile.tile.contains(SaEventCandidate.healpix),
+            SaSkymapTile.probdensity >= min_probdensity
+        )
+
+        results = session.execute(query)
+
+        for sa_event_candidate_id in results:
+            CredibleRegion.objects.update_or_create(
+                candidate=EventCandidate.objects.get(id=sa_event_candidate_id[0]),
+                localization=eventlocalization,
+                defaults={
+                    'smallest_percent': int(prob * 100.0)
+                }
+            )
 
 # def point_in_range_django(eventlocalization, prob):
 # This code is a beginning attempt to translate the healpix_alchemy query from sql_alchemy to django ORM
