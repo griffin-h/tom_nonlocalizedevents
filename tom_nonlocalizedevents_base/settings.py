@@ -167,7 +167,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
 MEDIA_URL = '/data/'
 
 TOM_API_URL = os.getenv('TOM_API_URL', 'http://127.0.0.1:8000')
-HERMES_API_URL = os.getenv('HERMES_API_URL', 'http://hermes-dev.lco.gtn')
+HERMES_API_URL = os.getenv('HERMES_API_URL', 'https://hermes-dev.lco.global')
 
 # Vue and django-webpack-loader/webpack-bundle-tracker configuration
 VUE_FRONTEND_DIR_TOM_NONLOCAL = os.path.join(STATIC_ROOT, 'tom_nonlocalizedevents/vue')
