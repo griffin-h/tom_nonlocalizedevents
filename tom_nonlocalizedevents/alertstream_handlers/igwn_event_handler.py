@@ -54,12 +54,13 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
 
     # Here we do a bit of pre-processing for IGWN alerts in order to be able to remove the skymap before saving the file
     localization = None
+    pipeline = alert.get('event', {}).get('pipeline', '')
     if alert.get('event'):
         skymap_bytes = alert['event'].pop('skymap')
         if skymap_bytes:
             try:
                 localization = create_localization_for_skymap(
-                    nonlocalizedevent=nonlocalizedevent, skymap_bytes=skymap_bytes
+                    nonlocalizedevent=nonlocalizedevent, skymap_bytes=skymap_bytes, pipeline=pipeline
                 )
             except Exception as e:
                 localization = None
@@ -72,7 +73,7 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
         if combined_skymap_bytes:
             try:
                 combined_localization = create_localization_for_skymap(
-                    nonlocalizedevent=nonlocalizedevent, skymap_bytes=combined_skymap_bytes, is_combined=True
+                    nonlocalizedevent=nonlocalizedevent, skymap_bytes=combined_skymap_bytes, is_combined=True, pipeline=pipeline
                 )
                 external_coincidence, _ = ExternalCoincidence.objects.get_or_create(
                     localization=combined_localization,
