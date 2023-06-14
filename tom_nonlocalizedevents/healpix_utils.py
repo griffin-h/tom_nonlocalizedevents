@@ -139,8 +139,8 @@ def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_
         else:
             distance_mean = 0
             distance_std = 0
-            row_dist_mean = 0
-            row_dist_std = 0
+            row_dist_mean = None
+            row_dist_std = None
         date = parse(skymap.meta['DATE']).replace(tzinfo=timezone.utc)
         skymap_uuid = uuid.UUID(skymap_hash)
         skymap_version = get_skymap_version(nonlocalizedevent, skymap_hash=skymap_uuid, is_combined=is_combined)
@@ -177,8 +177,8 @@ def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_
                     localization=localization,
                     tile=uniq_to_bigintrange(row['UNIQ']),
                     probdensity=probdensity,
-                    distance_mean=row_dist_mean[i] if row_dist_mean else 0,
-                    distance_std=row_dist_std[i] if row_dist_std else 0
+                    distance_mean=row_dist_mean[i] if row_dist_mean is None else 0,
+                    distance_std=row_dist_std[i] if row_dist_std is None else 0
                 )
     return localization
 
