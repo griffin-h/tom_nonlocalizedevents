@@ -177,8 +177,8 @@ def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_
                     localization=localization,
                     tile=uniq_to_bigintrange(row['UNIQ']),
                     probdensity=probdensity,
-                    distance_mean=row_dist_mean[i] if row_dist_mean is None else 0,
-                    distance_std=row_dist_std[i] if row_dist_std is None else 0
+                    distance_mean=row_dist_mean[i] if row_dist_mean is not None else 0,
+                    distance_std=row_dist_std[i] if row_dist_std is not None else 0
                 )
     return localization
 
