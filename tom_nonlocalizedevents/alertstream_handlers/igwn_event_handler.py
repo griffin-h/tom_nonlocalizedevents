@@ -73,7 +73,8 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
         if combined_skymap_bytes:
             try:
                 combined_localization = create_localization_for_skymap(
-                    nonlocalizedevent=nonlocalizedevent, skymap_bytes=combined_skymap_bytes, is_combined=True, pipeline=pipeline
+                    nonlocalizedevent=nonlocalizedevent, skymap_bytes=combined_skymap_bytes,
+                    is_combined=True, pipeline=pipeline
                 )
                 external_coincidence, _ = ExternalCoincidence.objects.get_or_create(
                     localization=combined_localization,
