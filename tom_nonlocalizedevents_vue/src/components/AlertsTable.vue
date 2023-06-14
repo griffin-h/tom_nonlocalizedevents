@@ -28,7 +28,7 @@
                 </b-link>
             </template>
             <template #row-details="data">
-                <span v-if="data.item.topic.toUpperCase().includes('circular')">{{ data.item.message_text }}</span>
+                <span v-if="data.item.topic.toLowerCase().includes('circular')" style="white-space: pre-wrap;">{{ data.item.message_text }}</span>
                 <div v-else-if="data.item.topic.toUpperCase().includes('LVC_COUNTERPART')">
                     <dl class="row" v-for="[key, value] in Object.entries(data.item.data)" :key="[key, value]">
                         <dt class="col-md-3">{{ key }}: </dt>
@@ -93,7 +93,7 @@ export default {
     },
     methods: {
         getAlertUrl(alert) {
-            return `${this.$store.state.hermesApiBaseUrl}/api/v0/messages/${alert.id}`;
+            return `${this.$store.state.hermesApiBaseUrl}/api/v0/messages/${alert.uuid}`;
         },
         getAlertsFromAlertData() {
             return this.alerts.filter(alert => alert.title !== "GCN/LVC NOTICE");
@@ -106,7 +106,7 @@ export default {
             // split on the '<', take the first part, and trim the whitespace
             return from.split('<')[0].trim();
         },
-        showRowDetails(item, index, event) {
+        showRowDetails(item, _index, _event) {
             item._showDetails = !item._showDetails;
         }
     }
