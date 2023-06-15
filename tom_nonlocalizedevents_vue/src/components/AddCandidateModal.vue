@@ -66,7 +66,7 @@
             }
         },
         created() {
-            this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
+            this.$root.$on('bv::modal::show', (_bvEvent, _modalId) => {
                 this.getTargets();
                 axios  // get groups available to user
                     .get(`${this.$store.state.tomApiBaseUrl}/api/groups/`, this.$store.state.tomAxiosConfig)
@@ -93,7 +93,7 @@
                         this.matches = this.matches.filter(value => {
                             let match = false;
                             this.existingEventCandidates.forEach(eventCandidate => {
-                                if (value.id === eventCandidate.id) match = true;
+                                if (value.id === eventCandidate.target.id) match = true;
                             });
                             return !match;
                         })
@@ -176,7 +176,7 @@
                         };
                         axios
                             .post(`${this.$store.state.tomApiBaseUrl}/api/targets/`, targetData, this.$store.state.tomAxiosConfig)
-                            .then(response => {
+                            .then(_response => {
                                 this.getTargets(this.form.name, this.form.ra, this.form.dec);
                             })
                             .catch(error => {
