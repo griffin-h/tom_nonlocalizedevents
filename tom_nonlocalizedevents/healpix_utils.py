@@ -122,7 +122,7 @@ def get_skymap_version(nle: NonLocalizedEvent, skymap_hash: uuid, is_combined: b
 
 
 def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_bytes: bytes, skymap_url: str = '',
-                                   is_combined=False):
+                                   is_combined: bool = False, pipeline: str = ''):
     """ Create localization from skymap bytes and related fields """
     logger.info(f"Creating localization for {nonlocalizedevent.event_id} with skymap {skymap_url}")
     skymap_hash = hashlib.md5(skymap_bytes).hexdigest()
@@ -130,25 +130,33 @@ def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_
         localization = EventLocalization.objects.get(nonlocalizedevent=nonlocalizedevent, skymap_hash=skymap_hash)
     except EventLocalization.DoesNotExist:
         skymap = Table.read(BytesIO(skymap_bytes))
-        distance_mean = skymap.meta['DISTMEAN']
-        distance_std = skymap.meta['DISTSTD']
+        is_burst = pipeline in ['CWB', 'oLIB', 'mLy']
+        if not is_burst:
+            distance_mean = skymap.meta['DISTMEAN']
+            distance_std = skymap.meta['DISTSTD']
+            row_dist_mean, row_dist_std, _ = distance.parameters_to_moments(
+                skymap['DISTMU'], skymap['DISTSIGMA'])
+        else:
+            distance_mean = 0
+            distance_std = 0
+            row_dist_mean = None
+            row_dist_std = None
         date = parse(skymap.meta['DATE']).replace(tzinfo=timezone.utc)
         skymap_uuid = uuid.UUID(skymap_hash)
         skymap_version = get_skymap_version(nonlocalizedevent, skymap_hash=skymap_uuid, is_combined=is_combined)
         if not skymap_url:
-            if is_combined:
-                skymap_url = (
-                    f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}"
-                    f"/files/combined-ext.multiorder.fits,{skymap_version}"
-                )
-            else:
-                skymap_url = (
-                    f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}"
-                    f"/files/bayestar.multiorder.fits,{skymap_version}"
-                )
+            base_url = f"https://gracedb.ligo.org/api/superevents/{nonlocalizedevent.event_id}/files/"
+            if pipeline in ['pycbc', 'gstlal', 'MBTA', 'MBTAOnline', 'spiir']:
+                if is_combined:
+                    skymap_url = f"{base_url}combined-ext.multiorder.fits,{skymap_version}"
+                else:
+                    skymap_url = f"{base_url}bayestar.multiorder.fits,{skymap_version}"
+            elif pipeline == 'CWB' and not is_combined:
+                skymap_url = f"{base_url}cwb.multiorder.fits,{skymap_version}"
+            elif pipeline == 'oLIB' and not is_combined:
+                skymap_url = f"{base_url}olib.multiorder.fits,{skymap_version}"
         area_50, area_90 = get_confidence_regions(skymap)
-        row_dist_mean, row_dist_std, _ = distance.parameters_to_moments(
-            skymap['DISTMU'], skymap['DISTSIGMA'])
+
         with transaction.atomic():
             localization = EventLocalization.objects.create(
                 nonlocalizedevent=nonlocalizedevent,
@@ -169,8 +177,8 @@ def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_
                     localization=localization,
                     tile=uniq_to_bigintrange(row['UNIQ']),
                     probdensity=probdensity,
-                    distance_mean=row_dist_mean[i],
-                    distance_std=row_dist_std[i]
+                    distance_mean=row_dist_mean[i] if row_dist_mean is not None else 0,
+                    distance_std=row_dist_std[i] if row_dist_std is not None else 0
                 )
     return localization
 

@@ -50,7 +50,7 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
     Also add the following to your settings if they are not already there, setting whatever default values you need for your setup. These point to your deployed TOM toolkit instance, and to a hermes instance:
     ```python
     TOM_API_URL = os.getenv('TOM_API_URL', 'http://127.0.0.1:8000')
-    HERMES_API_URL = os.getenv('HERMES_API_URL', 'http://hermes-dev.lco.gtn')
+    HERMES_API_URL = os.getenv('HERMES_API_URL', 'https://hermes-dev.lco.global')
 
     ```
 

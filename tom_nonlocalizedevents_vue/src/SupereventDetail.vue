@@ -17,7 +17,7 @@
       </b-col>
       <b-col cols="4">
         <h3>GraceDB BAYESTAR Images</h3>
-        <b-row>
+        <b-row v-if="!isBurstEvent">
           <b-img-lazy
             :src="getVolumeImageUrl(volume_image=true)"
             fluid
@@ -126,6 +126,9 @@ export default {
     };
   },
   computed: {
+    isBurstEvent() {
+      return ['oLIB', 'CWB', 'mLy'].includes(_.get(this.sequence, 'details.pipeline', ''));
+    },
     hasExternalCoincidence() {
       return !_.isNil(this.sequence.external_coincidence) && !_.isEmpty(this.sequence.external_coincidence);
     },
@@ -214,16 +217,28 @@ export default {
       // Construct URL with the superevent id and base skymap fits moc url
       // These files could eithe be a bayestar or LALInference file
       // for example: https://gracedb.ligo.org/api/superevents/S190426c/files/bayestar.volume.png"
+      let pipeline = _.get(this.sequence, 'details.pipeline', '');
       let image_base = '';
-      if (volume_image) {
-        image_base = 'bayestar.volume.png';
+      if (pipeline == 'CWB') {
+        image_base = 'cwb.png';
+      }
+      else if (pipeline == 'oLIB') {
+        image_base = 'olib.png';
+      }
+      else if (pipeline == 'mLy') {
+        image_base = 'mly.png';
       }
       else {
-        if (this.hasExternalCoincidence) {
-          image_base = 'combined-ext.png';
+        if (volume_image) {
+          image_base = 'bayestar.volume.png';
         }
         else {
-          image_base = 'bayestar.png';
+          if (this.hasExternalCoincidence) {
+            image_base = 'combined-ext.png';
+          }
+          else {
+            image_base = 'bayestar.png';
+          }
         }
       }
       let url = 'https://gracedb.ligo.org/api/superevents/' + this.supereventId + '/files/' + image_base;
