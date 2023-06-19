@@ -34,6 +34,7 @@ def ingest_sequence_from_hermes_message(message):
 
     localization = None
     skymap_url = data.get('urls', {}).get('skymap')
+    pipeline = data.get('event', {}).get('pipeline', '')
     if skymap_url:
         try:
             skymap_resp = requests.get(skymap_url)
@@ -41,7 +42,8 @@ def ingest_sequence_from_hermes_message(message):
             localization = create_localization_for_skymap(
                 nonlocalizedevent=nonlocalizedevent,
                 skymap_bytes=skymap_resp.content,
-                skymap_url=skymap_url
+                skymap_url=skymap_url,
+                pipeline=pipeline
             )
         except Exception as e:
             localization = None
@@ -60,7 +62,8 @@ def ingest_sequence_from_hermes_message(message):
                 nonlocalizedevent=nonlocalizedevent,
                 skymap_bytes=combined_skymap_resp.content,
                 skymap_url=combined_skymap_url,
-                is_combined=True
+                is_combined=True,
+                pipeline=pipeline
             )
             external_coincidence, _ = ExternalCoincidence.objects.get_or_create(
                 localization=combined_localization,
