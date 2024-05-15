@@ -91,10 +91,10 @@ class NonLocalizedEvent(models.Model):
         """Construct and return the Treasure Map (treasuremap.space) URL for this nonlocalizedevent
         from the event_id Field.
 
-        for example: http://treasuremap.space/alerts?graceids=S200219ac
+        for example: https://treasuremap.space/alerts?graceids=S200219ac
         """
         # TODO: add check that superevent_type is GRAVITATIONAL_WAVE
-        return f"http://treasuremap.space/alerts?graceids={self.event_id}"
+        return f"https://treasuremap.space/alerts?graceids={self.event_id}"
 
     @property
     def hermes_url(self):
