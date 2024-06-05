@@ -19,7 +19,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering :: Astronomy",
@@ -33,7 +32,7 @@ packages = [
 [tool.setuptools_scm]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.9,<3.12"
 astropy = ">=5.2"
 gracedb-sdk = "^0.1"
 hop-client = ">=0.8"
