@@ -51,7 +51,7 @@
             }
         },
         created() {
-            this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
+            this.$root.$on('bv::modal::show', (_bvEvent, _modalId) => {
                 // map alert properties to TargetTable properties in order to display them
                 this.submissionError = null;
                 this.modalAlerts = this.alerts;

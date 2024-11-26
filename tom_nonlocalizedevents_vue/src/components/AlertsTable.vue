@@ -41,7 +41,7 @@
                     <b-link :href="getAlertUrl(data.item)">{{ data.item.targets[0].name }}</b-link>
                 </span>
                 <span v-else>
-                    <b-link :href="getAlertUrl(data.item)">{{ data.item.id }}</b-link>
+                    <b-link :href="data.item.data.urls.gcn_circular">{{ data.item.data.circularId }}</b-link>
                 </span>
             </template>
             <template #cell(timestamp)="data">

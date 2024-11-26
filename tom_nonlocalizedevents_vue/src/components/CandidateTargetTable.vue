@@ -70,8 +70,8 @@ export default {
             candidateFields: [
                 //{ 'key': 'priority', 'label': 'Priority', 'sortable': true },
                 { 'key': 'target-link', 'label': 'Candidate', 'sortable': true },
-                { 'key': 'target.ra', 'label': 'RA', formatter: (value, key, item) => value.toLocaleString() },
-                { 'key': 'target.dec', 'label': 'DEC', formatter: (value, key, item) => value.toLocaleString() },
+                { 'key': 'target.ra', 'label': 'RA', formatter: (value, _key, _item) => value.toLocaleString() },
+                { 'key': 'target.dec', 'label': 'DEC', formatter: (value, _key, _item) => value.toLocaleString() },
                 { 'key': 'credible_region', 'label': 'CR %', 'sortable': true },
                 { 'key': 'active' },
                 { 'key': 'viability_reason', 'label': "Viability Reason" },

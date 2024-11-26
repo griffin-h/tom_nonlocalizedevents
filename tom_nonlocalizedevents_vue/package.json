@@ -14,6 +14,7 @@
     "core-js": "^3.6.5",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
+    "supervue": "^2.1.0",
     "tom-toolkit-component-lib": "^0.1.4",
     "vue": "^2.6.11 <2.7.0",
     "vuex": "^3.6.2",
@@ -42,7 +43,12 @@
       "parser": "babel-eslint"
     },
     "rules": {
-      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ]
     }
   },
   "browserslist": [
