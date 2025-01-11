@@ -132,7 +132,7 @@ def create_localization_for_skymap(nonlocalizedevent: NonLocalizedEvent, skymap_
         localization = EventLocalization.objects.get(nonlocalizedevent=nonlocalizedevent, skymap_hash=skymap_uuid)
     except EventLocalization.DoesNotExist:
         skymap = Table.read(BytesIO(skymap_bytes))
-        is_burst = pipeline in ['CWB', 'oLIB', 'mLy']
+        is_burst = pipeline in ['CWB', 'oLIB', 'MLy']
         if not is_burst:
             distance_mean = skymap.meta['DISTMEAN']
             distance_std = skymap.meta['DISTSTD']
