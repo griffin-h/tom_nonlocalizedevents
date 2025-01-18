@@ -15,7 +15,7 @@
             @row-clicked="showRowDetails"
         >
             <template #cell(selected)="data">
-                <div v-if="data.item.targets && data.item.targets.length > 0">
+                <div v-if="hasTargets(data.item)">
                     <b-form-checkbox @change="$emit('selected-alert', data, $event)" />
                 </div>
             </template>
@@ -28,13 +28,13 @@
                 </b-link>
             </template>
             <template #row-details="data">
-                <span v-if="data.item.topic.toLowerCase().includes('circular')" style="white-space: pre-wrap;">{{ data.item.message_text }}</span>
-                <div v-else-if="data.item.topic.toUpperCase().includes('LVC_COUNTERPART')">
+                <div v-if="data.item.topic.toUpperCase().includes('LVC_COUNTERPART')">
                     <dl class="row" v-for="[key, value] in Object.entries(data.item.data)" :key="[key, value]">
                         <dt class="col-md-3">{{ key }}: </dt>
                         <dd class="col-md-9">{{ value }}</dd>
                     </dl>
                 </div>
+                <span v-else style="white-space: pre-wrap;">{{ data.item.message_text }}</span>
             </template>
             <template #cell(identifier)="data">
                 <span v-if="data.item.targets && data.item.targets.length > 0">
@@ -105,6 +105,15 @@ export default {
             // remove <name@example.com> part of from field; leave name at Institution
             // split on the '<', take the first part, and trim the whitespace
             return from.split('<')[0].trim();
+        },
+        hasTargets(alert) {
+            if(alert.targets && alert.targets.length > 0) {
+                return true
+            }
+            else if(alert.data && alert.data.cntrpart_ra && alert.data.cntrpart_dec && alert.data.event_trig_num && alert.data.sourse_sernum) {
+                return true
+            }
+            return false
         },
         showRowDetails(item, _index, _event) {
             item._showDetails = !item._showDetails;

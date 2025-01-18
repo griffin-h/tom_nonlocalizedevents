@@ -51,18 +51,33 @@
             }
         },
         created() {
-            this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
+            this.$root.$on('bv::modal::show', () => {
                 // map alert properties to TargetTable properties in order to display them
                 this.submissionError = null;
-                this.modalAlerts = this.alerts;
-                this.modalAlerts = this.modalAlerts.map(alert => {
-                    let modifiedAlert = alert;
-                    modifiedAlert.identifier = alert.targets[0].name;
-                    modifiedAlert.name = alert.targets[0].name;
-                    modifiedAlert.ra = alert.targets[0].right_ascension;
-                    modifiedAlert.dec = alert.targets[0].declination;
-                    return modifiedAlert;
-                });
+                this.modalAlerts = [];
+                this.alerts.forEach((alert) => {
+                    // Add each item from the targets table here
+                    alert.targets.forEach((target) => {
+                        this.modalAlerts.push({
+                            identifier: target.name,
+                            name: target.name,
+                            ra: target.right_ascension,
+                            dec: target.declination
+                        })
+                    })
+                    // Also check the data section and add LVC counterpart targets from there
+                    if(alert.data && alert.data.cntrpart_ra && alert.data.cntrpart_dec && alert.data.event_trig_num && alert.data.sourse_sernum) {
+                        let name = alert.data.event_trig_num + '-' + alert.data.sourse_sernum
+                        let ra = alert.data.cntrpart_ra.split(' ')[0].split('d')[0]
+                        let dec = alert.data.cntrpart_dec.split(' ')[0].split('d')[0]
+                        this.modalAlerts.push({
+                            identifier: name,
+                            name: name,
+                            ra: ra,
+                            dec: dec
+                        })
+                    }
+                })
 
                 // get groups available to user
                 axios
