@@ -16,5 +16,6 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('tom_common.urls')),
     path('nonlocalizedevents/', include('tom_nonlocalizedevents.urls')),
 ]
