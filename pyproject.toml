@@ -1,9 +1,16 @@
-[tool.poetry]
+[project]
 name = "tom-nonlocalizedevents"
 # this version is a placeholder: version supplied by poetry-dynamic-versioning
 version = "0.0.0"
 description = "Reusable TOMToolkit app to support gravitational wave superevent and other nonlocalized event EM follow-up observations."
-authors = ["TOM Toolkit Project <tomtoolkit@lco.global>", "David Collom <dcollom@lco.global>", "Lindy Lindstrom <llindstrom@lco.global>", "Jonathan Nation <jnation@lco.global>"]
+authors = [
+    {name = "TOM Toolkit Project", email = "tomtoolkit-maintainers@lco.global"},
+]
+maintainers = [
+    {name = "William Lindstrom", email = "llindstrom@lco.global"},
+    {name = "Jonathan Nation", email = "jnation@lco.global"}
+]
+
 license = "GPL-3.0-only"
 readme = "README.md"
 repository = "https://github.com/TOMToolkit/tom_nonlocalizedevents"
@@ -26,32 +33,43 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics"
 ]
 
-packages = [
-    { include = "tom_nonlocalizedevents" }
+dynamic = ["version"]
+requires-python = ">=3.9.0,<3.13"
+
+dependencies = {
+       "astropy >=5.3.3,<7",
+       "gracedb-sdk ^0.2",
+       "hop-client >=0.10,<1.0",
+       "python-dateutil ^2.8",
+       "django-webpack-loader >=3.0,<4.0",
+       "tomtoolkit >=2.22,<3",
+       "django-filter >=23.0 <30.0",
+       "healpix-alchemy >=1.1.0,<2.0",
+       "astropy-healpix >=1.0,<2.0",
+       "MOCPy >=0.17.0,<1.0",
+       "SQLAlchemy >=2.0.0,<3.0",
+       "psycopg2-binary ^2.9.10",
+       ""ligo.skymap >=2.1.0,<3.0",
 ]
 
-[tool.setuptools_scm]
+[tool.poetry]
+packages = [
+    { include = "tom_nonlocalizedevents" },
+]
+version = "0.0.0" # version supplied by poetry-dynamic-versioning
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-astropy = ">=5.3.3,<7"
-gracedb-sdk = "^0.2"
-hop-client = ">=0.10,<1.0"
-python-dateutil = "^2.8"
-django-webpack-loader = ">=3.0,<4.0"
-tomtoolkit = "^2.22"
-django-filter = ">=23.0 <30.0"
-healpix-alchemy = ">=1.1.0,<2.0"
-astropy-healpix = ">=1.0,<2.0"
-MOCPy = ">=0.17.0,<1.0"
-SQLAlchemy = ">=2.0.0,<3.0"
-psycopg2-binary = "^2.9.10"
-"ligo.skymap" = ">=2.1.0,<3.0"
 
-[tool.poetry.dev-dependencies]
-coverage = ">=6,<8"
+[tool.poetry.group.test.dependencies]
 factory_boy = "^3.1.0"
 pytest = ">=8.0"
+
+[tool.poetry.group.coverage.dependencies]
+coverage = ">=6,<8" # coveralls needs ~6 even though 7.3.2 is latest
+coveralls = ">=3,<5"
+
+[tool.poetry.group.lint.dependencies]
+flake8 = ">=6.0,<7.2"
+
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -63,6 +81,6 @@ style = "pep440"
 pattern = "(?x)^[v]?((?P<epoch>\\d+)!)?(?P<base>\\d+(\\.\\d+)*)([-._]?((?P<stage>[a-zA-Z]+)[-._]?(?P<revision>\\d+)?))?(\\+(?P<tagged_metadata>.+))?$"
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "setuptools>=45", "setuptools_scm[toml]>=6.2", "poetry-dynamic-versioning"]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning >=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 # poetry_dynamic_versioning.backend is a thin wrapper around the standard build-backend = "poetry.core.masonry.api"
