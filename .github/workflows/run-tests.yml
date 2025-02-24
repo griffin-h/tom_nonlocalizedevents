@@ -92,6 +92,6 @@ jobs:
           DB_HOST: localhost
           DB_PORT: 5432
       - name: Report Coverage
-        run: coveralls
+        run: poetry run coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
