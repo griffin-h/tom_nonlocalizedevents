@@ -34,14 +34,14 @@ classifiers = [
 ]
 
 dynamic = ["version"]
-requires-python = ">=3.9.0,<3.13"
+requires-python = ">=3.10,<3.13"
 
 dependencies = [
     "astropy >=5.3.3,<7 ; python_version >= '3.10'",
     "astropy >=5.3.3,<6 ; python_version < '3.10'",
-    "gracedb-sdk ^0.2",
+    "gracedb-sdk <1",
     "hop-client >=0.10,<1.0",
-    "python-dateutil ^2.8",
+    "python-dateutil <3",
     "django-webpack-loader >=3.0,<4.0",
     "tomtoolkit >=2.22,<3",
     "django-filter >=23.0 <30.0",
@@ -49,7 +49,7 @@ dependencies = [
     "astropy-healpix >=1.0,<2.0",
     "MOCPy >=0.17.0,<1.0",
     "SQLAlchemy >=2.0.0,<3.0",
-    "psycopg2-binary ^2.9.10",
+    "psycopg2-binary <3",
     "ligo.skymap >=2.1.0,<3.0",
 ]
 
