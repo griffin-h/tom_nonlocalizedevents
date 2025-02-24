@@ -36,7 +36,7 @@ classifiers = [
 dynamic = ["version"]
 requires-python = ">=3.9.0,<3.13"
 
-dependencies = {
+dependencies = [
        "astropy >=5.3.3,<7",
        "gracedb-sdk ^0.2",
        "hop-client >=0.10,<1.0",
