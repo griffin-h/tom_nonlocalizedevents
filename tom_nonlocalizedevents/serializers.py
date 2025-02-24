@@ -26,7 +26,8 @@ class EventCandidateSerializer(serializers.ModelSerializer):
     See: https://www.django-rest-framework.org/api-guide/relations/#custom-relational-fields
     """
     nonlocalizedevent = serializers.PrimaryKeyRelatedField(queryset=NonLocalizedEvent.objects.all())
-    target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all(), required=False)
+    target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all(), required=False,
+                                                allow_null=True, default=None)
     target_fields = serializers.DictField(required=False, write_only=True)
     credible_regions = serializers.SerializerMethodField()
     UPDATE_KEYS = ['viable', 'viability_reason', 'priority']
