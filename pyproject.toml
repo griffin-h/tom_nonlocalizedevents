@@ -1,7 +1,5 @@
 [project]
 name = "tom-nonlocalizedevents"
-# this version is a placeholder: version supplied by poetry-dynamic-versioning
-version = "0.0.0"
 description = "Reusable TOMToolkit app to support gravitational wave superevent and other nonlocalized event EM follow-up observations."
 authors = [
     {name = "TOM Toolkit Project", email = "tomtoolkit-maintainers@lco.global"},
@@ -33,7 +31,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics"
 ]
 
-dynamic = ["version"]
+dynamic = ["version"] # see tool.poetry.version
 requires-python = ">=3.10,<3.13"
 
 dependencies = [
@@ -44,7 +42,7 @@ dependencies = [
     "python-dateutil <3",
     "django-webpack-loader >=3.0,<4.0",
     "tomtoolkit >=2.22,<3",
-    "django-filter >=23.0 <30.0",
+    "django-filter >=23.0,<30.0",
     "healpix-alchemy >=1.1.0,<2.0",
     "astropy-healpix >=1.0,<2.0",
     "MOCPy >=0.17.0,<1.0",
