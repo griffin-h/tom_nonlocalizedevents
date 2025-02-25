@@ -26,6 +26,6 @@ class TomNonlocalizedeventsConfig(AppConfig):
         This method should return a list of URL patterns to be included in the main URL configuration.
         """
         urlpatterns = [
-            path(f'nonlocalizedevents/', include(f'{self.name}.urls', namespace='nonlocalizedevents'))
+            path('nonlocalizedevents/', include(f'{self.name}.urls', namespace='nonlocalizedevents'))
         ]
         return urlpatterns
