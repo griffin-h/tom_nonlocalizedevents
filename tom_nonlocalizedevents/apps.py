@@ -2,8 +2,9 @@ from django.apps import AppConfig
 from django.urls import path, include
 
 
-class NonLocalizedEventTypesConfig(AppConfig):
+class TomNonlocalizedeventsConfig(AppConfig):
     name = 'tom_nonlocalizedevents'
+    # default value of `label` required for migrations to work
 
     def ready(self):
         import tom_nonlocalizedevents.signals.handlers  # noqa
