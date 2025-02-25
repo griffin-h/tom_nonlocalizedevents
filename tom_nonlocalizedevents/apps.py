@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.urls import path, include
 
 
 class NonLocalizedEventTypesConfig(AppConfig):
@@ -17,3 +18,13 @@ class NonLocalizedEventTypesConfig(AppConfig):
         """
         # add a single navbar item (defined in the partial) goto the NLE index page
         return [{'partial': f'{self.name}/partials/navbar_nonlocalizedevents.html', 'position': 'left'}]
+
+    def include_url_paths(self):
+        """
+        Integration point for adding URL patterns to the Tom Common URL configuration.
+        This method should return a list of URL patterns to be included in the main URL configuration.
+        """
+        urlpatterns = [
+            path(f'nonlocalizedevents/', include(f'{self.name}.urls', namespace='nonlocalizedevents'))
+        ]
+        return urlpatterns
