@@ -77,8 +77,7 @@ def handle_igwn_message(message: JSONBlob, metadata: Metadata):
                     is_combined=True, pipeline=pipeline
                 )
                 external_coincidence, _ = ExternalCoincidence.objects.get_or_create(
-                    localization=combined_localization,
-                    defaults={'details': alert.get('external_coinc')}
+                    localization=combined_localization, details=alert.get('external_coinc')
                 )
             except Exception as e:
                 external_coincidence = None
