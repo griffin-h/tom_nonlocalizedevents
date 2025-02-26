@@ -28,8 +28,10 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
         'tom_nonlocalizedevents',
     ]
     ```
+    This will add `tom_nonlocalizedevents` urlpatterns to your project (TOM) urlpatterns and add a
+    "Nonlocalized Events" item to your TOM's navbar, which takes you to the Nonlocalized Events index page.
     
-    Also include the following Django-Webpack-Loader settings in your settings.py:
+    Also in your `settings.py`, include the following Django-Webpack-Loader settings:
 
     ```python
     VUE_FRONTEND_DIR_TOM_NONLOCAL = os.path.join(STATIC_ROOT, 'tom_nonlocalizedevents/vue')
@@ -47,24 +49,16 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
 
     If `WEBPACK_LOADER` is already defined in your settings, then integrate these values in to it.
 
-    Also add the following to your settings if they are not already there, setting whatever default values you need for your setup. These point to your deployed TOM toolkit instance, and to a hermes instance:
+    Also add the following to your settings if they are not already there, setting whatever default values you need for your setup. These point to your deployed TOM toolkit instance, and to the HERMES API:
     ```python
     TOM_API_URL = os.getenv('TOM_API_URL', 'http://127.0.0.1:8000')
     HERMES_API_URL = os.getenv('HERMES_API_URL', 'https://hermes-dev.lco.global')
 
     ```
 
-3. Include the tom_nonlocalizedevent URLconf in your project `urls.py`:
-   ```python
-   urlpatterns = [
-        ...
-        path('nonlocalizedevents/', include('tom_nonlocalizedevents.urls', namespace='nonlocalizedevents')),
-   ]
-   ```
+3. Run ``python manage.py migrate`` to create the tom_nonlocalizedevents models.
 
-4. Run ``python manage.py migrate`` to create the tom_nonlocalizedevents models.
-
-5. Set environment variables below to configure different connections:
+4. Set environment variables below to configure different connections:
 
 | Env variable | Description | Default |
 | ------------ | ----------- | ------- |
@@ -77,9 +71,9 @@ This TOM plugin requires the use of a postgresql 14+ database backend, since it 
 See [Engine Configuration](https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine) for
 details of SQLAlchemy Engine Configuration.
 
-6. In your TOM project, make sure to run `python manage.py collectstatic` after installing this app, to collect its Vue pages into your `staticfiles` directory.
+5. In your TOM project, make sure to run `python manage.py collectstatic` after installing this app, to collect its Vue pages into your `staticfiles` directory.
 
-7. If you want to automatically ingest GW events into your TOM, you should also install the `tom_alertstreams` app into your TOM and configure it to use the tom_nonlocalizedevents handler to ingest GW events. The preferred way is to use the hop `igwn.gwalerts` topic and set it to the handler `tom_nonlocalizedevents.alertstream_handlers.igwn_event_handler.handle_igwn_message`. This format has the newest Ligo O4 fields. There is legacy support for the gcn classic over kafka plaintext formatted LVC alerts using the handler `tom_nonlocalizedevents.alertstream_handlers.gcn_event_handler.handle_message`. There is also a handler to handle retractions via the `handle_retraction` method in that package. For an example of what needs to be in your settings to configure `tom_alertstreams` for these streams, look [here](https://github.com/LCOGT/hermes/blob/dev/hermes_base/settings.py#L232)
+6. If you want to automatically ingest GW events into your TOM, you should also install the `tom_alertstreams` app into your TOM and configure it to use the tom_nonlocalizedevents handler to ingest GW events. The preferred way is to use the hop `igwn.gwalerts` topic and set it to the handler `tom_nonlocalizedevents.alertstream_handlers.igwn_event_handler.handle_igwn_message`. This format has the newest Ligo O4 fields. There is legacy support for the gcn classic over kafka plaintext formatted LVC alerts using the handler `tom_nonlocalizedevents.alertstream_handlers.gcn_event_handler.handle_message`. There is also a handler to handle retractions via the `handle_retraction` method in that package. For an example of what needs to be in your settings to configure `tom_alertstreams` for these streams, look [here](https://github.com/LCOGT/hermes/blob/dev/hermes_base/settings.py#L232)
 
 ## Development
 
